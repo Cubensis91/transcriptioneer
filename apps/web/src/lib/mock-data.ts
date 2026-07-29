@@ -18,7 +18,7 @@ export type ProcessingStage =
 export type MockDocument = {
   id: string;
   title: string;
-  kind: "audio" | "pdf" | "docx" | "txt" | "md";
+  kind: "audio" | "video" | "pdf" | "docx" | "txt" | "md" | "image";
   stage: ProcessingStage;
   updatedAt: string;
   durationOrPages: string;

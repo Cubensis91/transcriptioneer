@@ -1,4 +1,7 @@
+"use client";
+
 import { cn } from "@transcriptioneer/ui";
+import { motion, useReducedMotion } from "framer-motion";
 import type { FileVisualState } from "./file-state/file-state-meta";
 
 const ACTIVE_STATES: ReadonlySet<FileVisualState> = new Set([
@@ -17,18 +20,26 @@ const ACTIVE_STATES: ReadonlySet<FileVisualState> = new Set([
  */
 export function ScribeMark({
   state,
+  animate = true,
   className,
 }: {
   state?: FileVisualState;
+  /** Idle "breathing" loop when not actively processing. Off by default
+   *  wherever the mark is purely decorative/small (e.g. sidebar). */
+  animate?: boolean;
   className?: string;
 }) {
   const active = state ? ACTIVE_STATES.has(state) : false;
+  const reduceMotion = useReducedMotion();
+  const breathe = animate && !active && !reduceMotion;
 
   return (
-    <svg
+    <motion.svg
       viewBox="0 0 32 40"
       className={cn("size-16", className)}
       aria-hidden
+      animate={breathe ? { scale: [1, 1.03, 1] } : undefined}
+      transition={breathe ? { duration: 4, repeat: Infinity, ease: "easeInOut" } : undefined}
     >
       {/* Hood / cloak silhouette — deep navy character material, fixed
           across light/dark themes like a brand mark rather than a themed
@@ -48,10 +59,12 @@ export function ScribeMark({
       <rect x="6" y="14" width="3.4" height="7" rx="1.7" fill="#8a97a8" />
       <rect x="22.6" y="14" width="3.4" height="7" rx="1.7" fill="#8a97a8" />
       {/* Glowing eyes — the one recurring "alive" accent across every
-          state; pulse gently while the pipeline is actively working,
-          respecting prefers-reduced-motion via the shared global override. */}
+          state; pulse gently while the pipeline is actively working, and
+          breathe softly while idle — both respect prefers-reduced-motion
+          (animate-pulse via the shared global CSS override, the idle
+          breathing loop via framer-motion's useReducedMotion above). */}
       <circle cx="12.2" cy="19.5" r="1.7" className={cn("fill-accent-400", active && "animate-pulse")} />
       <circle cx="19.8" cy="19.5" r="1.7" className={cn("fill-accent-400", active && "animate-pulse")} />
-    </svg>
+    </motion.svg>
   );
 }

@@ -1,13 +1,15 @@
 import { cn } from "@transcriptioneer/ui";
-import { FileAudio, FileText, FileType } from "lucide-react";
+import { FileAudio, FileImage, FileText, FileType, FileVideo } from "lucide-react";
 import type { MockDocument } from "@/lib/mock-data";
 
 const kindMeta: Record<MockDocument["kind"], { label: string; icon: typeof FileText }> = {
   audio: { label: "Audio", icon: FileAudio },
+  video: { label: "Video", icon: FileVideo },
   pdf: { label: "PDF", icon: FileText },
   docx: { label: "DOCX", icon: FileText },
   txt: { label: "TXT", icon: FileType },
   md: { label: "Markdown", icon: FileType },
+  image: { label: "Image", icon: FileImage },
 };
 
 export function FileTypeIndicator({ kind, className }: { kind: MockDocument["kind"]; className?: string }) {

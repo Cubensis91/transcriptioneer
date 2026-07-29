@@ -26,7 +26,7 @@ export function BrandSection() {
     <Section
       id="brand"
       title="Brand"
-      description="Original placeholder mark: three ascending bars, a quiet nod to turning raw audio into structured, ordered knowledge — not a literal microphone or soundwave."
+      description="An arched doorway/portal glyph — the motif every reference mockup uses, and a literal echo of the intake experience's 'a threshold, not a button' framing."
     >
       <div className="flex flex-col gap-10">
         <div>

@@ -11,6 +11,7 @@ import {
   UploadCloud,
 } from "lucide-react";
 import type { BadgeProps } from "@transcriptioneer/ui";
+import type { ProcessingStage } from "@/lib/mock-data";
 
 export type FileVisualState =
   | "selected"
@@ -24,6 +25,17 @@ export type FileVisualState =
   | "indexing"
   | "completed"
   | "failed";
+
+/**
+ * `ProcessingStage` (lib/mock-data.ts, mirrors the real pipeline states) and
+ * `FileVisualState` (this file, what components actually render) overlap
+ * almost entirely — this bridges the one gap ("validating" has no dedicated
+ * visual state yet, it reads as "queued"). Shared so document-card.tsx and
+ * the homepage's process panel don't each redefine the same mapping.
+ */
+export function processingStageToVisualState(stage: ProcessingStage): FileVisualState {
+  return stage === "validating" ? "queued" : stage;
+}
 
 export const fileStateMeta: Record<
   FileVisualState,

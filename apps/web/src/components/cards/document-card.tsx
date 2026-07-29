@@ -1,20 +1,8 @@
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@transcriptioneer/ui";
 import { FileText } from "lucide-react";
 import { FileStateBadge } from "../file-state/file-state-badge";
+import { processingStageToVisualState } from "../file-state/file-state-meta";
 import type { MockDocument } from "@/lib/mock-data";
-
-const stageToVisual = {
-  uploaded: "uploaded",
-  validating: "queued",
-  queued: "queued",
-  processing: "processing",
-  extracting: "extracting",
-  transcribing: "transcribing",
-  analyzing: "analyzing",
-  indexing: "indexing",
-  completed: "completed",
-  failed: "failed",
-} as const;
 
 export function DocumentCard({ document }: { document: MockDocument }) {
   return (
@@ -29,7 +17,7 @@ export function DocumentCard({ document }: { document: MockDocument }) {
             </p>
           </div>
         </div>
-        <FileStateBadge state={stageToVisual[document.stage]} />
+        <FileStateBadge state={processingStageToVisualState(document.stage)} />
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <p className="text-sm text-text-muted">

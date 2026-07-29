@@ -7,7 +7,7 @@ describe("Home", () => {
     vi.unstubAllGlobals();
   });
 
-  it("renders the foundation placeholder immediately, before the health check resolves", () => {
+  it("renders the entrance — brand, intake threshold, and a not-yet-resolved API status — immediately", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(() => new Promise(() => {})), // never resolves within this test
@@ -15,7 +15,8 @@ describe("Home", () => {
 
     render(<Home />);
 
-    expect(screen.getByText("Transcriptioneer")).toBeInTheDocument();
-    expect(screen.getByText("checking…")).toBeInTheDocument();
+    expect(screen.getAllByText("Transcriptioneer").length).toBeGreaterThan(0);
+    expect(screen.getByText("Bring me something to understand")).toBeInTheDocument();
+    expect(screen.getByRole("status", { name: "checking…" })).toBeInTheDocument();
   });
 });
