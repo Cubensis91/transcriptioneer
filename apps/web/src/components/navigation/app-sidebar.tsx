@@ -7,6 +7,7 @@ export function AppSidebar({ className }: { className?: string }) {
     <aside
       className={cn(
         "flex h-full w-60 shrink-0 flex-col border-r border-border bg-surface p-4",
+        "bg-[image:var(--surface-gradient-raised)] shadow-sm ring-1 ring-inset ring-[var(--ring-inset)]",
         className,
       )}
     >

@@ -20,6 +20,7 @@ export function TopNav({ className }: { className?: string }) {
     <header
       className={cn(
         "flex items-center gap-4 border-b border-border bg-surface px-4 py-3 sm:px-6",
+        "bg-[image:var(--surface-gradient-raised)] shadow-sm ring-1 ring-inset ring-[var(--ring-inset)]",
         className,
       )}
     >
