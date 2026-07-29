@@ -50,11 +50,22 @@ against both, not just against technical completeness.
   2. `packages/ui` had to be switched from CommonJS to ESM output — TypeScript's forced `"use strict"` prologue was shadowing `"use client"` directives, silently breaking every client component in the package under Next.js's static generation.
 
 ### Repo history note
-`main` (origin) and `master` (this branch) are unrelated git histories — `main`
-holds no application code, only docs/planning, and was left untouched.
+`main` (origin) and `master` (this branch) are unrelated git histories.
 `VISUAL_IDENTITY.md`, including the founder's 2026-07-29 mandatory-skeuomorphism
-directive, was reconciled onto `master` from `main`'s stash; nothing else from
-`main` was merged in.
+directive, was reconciled onto `master` from `main`'s stash early on; nothing
+else from `main` was merged in.
+
+**Update:** `main` has since had its own independent Milestone 1 rebuild
+pushed to it (a separate session, unaware `master` already had Milestones
+1–2 complete), plus an unrelated Figma Make export
+(`Complete Transcriptioneer Application/`) with no Transcriptioneer-specific
+identity (generic logo/palette, no scribe, no doorway mark). Its copy of
+`VISUAL_IDENTITY.md` is also older than `master`'s, missing the mandatory
+skeuomorphism section. **`master` is the authoritative Transcriptioneer
+source; `main` is an outdated parallel line and must not be merged into
+`master` without explicit review.** A protective tag
+(`transcriptioneer-pre-unification`) marks this branch's state before any
+future unification decision.
 
 ## Fully implemented
 
