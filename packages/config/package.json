@@ -1,0 +1,21 @@
+{
+  "name": "@transcriptioneer/config",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "exports": {
+    "./eslint/base": "./eslint/base.js",
+    "./eslint/nest": "./eslint/nest.js",
+    "./typescript/base.json": "./typescript/base.json",
+    "./typescript/nextjs.json": "./typescript/nextjs.json",
+    "./typescript/nestjs.json": "./typescript/nestjs.json",
+    "./typescript/library.json": "./typescript/library.json",
+    "./typescript/library-build.json": "./typescript/library-build.json",
+    "./prettier": "./prettier.js"
+  },
+  "dependencies": {
+    "@eslint/js": "^9.17.0",
+    "eslint-config-prettier": "^9.1.0",
+    "typescript-eslint": "^8.18.0"
+  }
+}

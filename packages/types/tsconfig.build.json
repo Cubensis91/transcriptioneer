@@ -1,0 +1,8 @@
+{
+  "extends": "@transcriptioneer/config/typescript/library-build.json",
+  "compilerOptions": {
+    "outDir": "./dist"
+  },
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"]
+}

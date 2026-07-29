@@ -1,0 +1,24 @@
+// Milestone 1 foundation only. The full knowledge-graph schema (users,
+// organizations, files, transcripts, knowledge items, chunks/embeddings,
+// conversations, etc. — see ARCHITECTURE.md §4) is introduced incrementally
+// starting with authentication in Milestone 3.
+
+generator client {
+  provider        = "prisma-client-js"
+  output          = "../generated/client"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+/// Foundation-only model used to prove migrations, connection pooling, and
+/// the pgvector extension are wired correctly end to end. Superseded once
+/// real domain models land.
+model HealthCheck {
+  id        String   @id @default(uuid())
+  checkedAt DateTime @default(now())
+}

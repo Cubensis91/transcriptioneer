@@ -1,0 +1,59 @@
+name: transcriptioneer
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: transcriptioneer
+      POSTGRES_PASSWORD: transcriptioneer
+      POSTGRES_DB: transcriptioneer
+    ports:
+      - "5432:5432"
+    volumes:
+      - transcriptioneer_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U transcriptioneer -d transcriptioneer"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Provisioned now for Milestone 5+ (async transcription/analysis pipeline);
+  # no queues are wired up yet in Milestone 1.
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - transcriptioneer_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # S3-compatible local object storage, behind the same StorageDriver
+  # interface production uses (S3/R2). Provisioned now for Milestone 4.
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: transcriptioneer
+      MINIO_ROOT_PASSWORD: transcriptioneer
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - transcriptioneer_minio:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  transcriptioneer_postgres:
+  transcriptioneer_redis:
+  transcriptioneer_minio:

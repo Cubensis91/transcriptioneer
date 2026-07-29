@@ -1,0 +1,266 @@
+/**
+ * Transcriptioneer design tokens.
+ *
+ * Framework-agnostic: plain CSS custom properties, no Tailwind directives,
+ * so this file can be shared conceptually with the mobile app later (as a
+ * reference for equivalent React Native tokens) even though components
+ * themselves are not shared cross-platform (see ARCHITECTURE.md §3/§9).
+ *
+ * Structure:
+ *   1. Raw scales (neutral, accent, semantic) — the actual hues/steps.
+ *   2. Role tokens (--color-bg, --color-text, ...) — what components use.
+ *      Light and dark mode map roles to *different* scale steps (e.g.
+ *      surface is lighter than bg in light mode, but lighter than bg in a
+ *      different way in dark mode too) rather than mechanically inverting
+ *      every value. That's the "don't just invert colors" requirement.
+ */
+
+:root {
+  /* ---- Raw neutral scale (warm ink, not pure gray) -------------------- */
+  --neutral-50: #fafaf9;
+  --neutral-100: #f5f5f4;
+  --neutral-200: #e7e5e4;
+  --neutral-300: #d6d3d1;
+  --neutral-400: #a8a29e;
+  --neutral-500: #78716c;
+  --neutral-600: #57534e;
+  --neutral-700: #44403c;
+  --neutral-800: #292524;
+  --neutral-900: #1c1917;
+  --neutral-950: #0c0a09;
+
+  /* ---- Raw accent scale ("signal" — muted petrol teal) ---------------- */
+  --accent-50: #eefbf9;
+  --accent-100: #d3f3ee;
+  --accent-200: #a9e6dd;
+  --accent-300: #78d2c6;
+  --accent-400: #43b3a7;
+  --accent-500: #27948a;
+  --accent-600: #1f7972;
+  --accent-700: #1c625d;
+  --accent-800: #194f4b;
+  --accent-900: #17403d;
+  --accent-950: #082523;
+
+  /* ---- Semantic hues (kept distinct from the brand accent) ------------ */
+  --success-500: #3f9151;
+  --success-600: #2f7a40;
+  --success-50: #eff8f0;
+  --success-900: #163a1e;
+
+  --warning-500: #b3812e;
+  --warning-600: #966a20;
+  --warning-50: #fbf3e6;
+  --warning-900: #4a3510;
+
+  --error-500: #c0523f;
+  --error-600: #a33f2e;
+  --error-50: #fbeeec;
+  --error-900: #4a1810;
+
+  --info-500: #3e72b4;
+  --info-600: #2f5a92;
+  --info-50: #ecf2fa;
+  --info-900: #142a44;
+
+  /* ---- Typography ------------------------------------------------------ */
+  --font-display-tokens: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans-tokens: "Geist Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono-tokens: "Geist Mono", ui-monospace, monospace;
+
+  /* ---- Radius ----------------------------------------------------------- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 0.875rem;
+  --radius-xl: 1.25rem;
+
+  /* ---- Motion ------------------------------------------------------------ */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* ---- Role tokens: LIGHT MODE ------------------------------------------- */
+  /* Page background is a warm ivory, not flat white; surfaces (cards) are
+     pure white so content lifts gently off the page without heavy shadows. */
+  --color-bg: var(--neutral-50);
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-border: var(--neutral-200);
+  --color-border-strong: var(--neutral-300);
+  --color-text: var(--neutral-900);
+  --color-text-muted: var(--neutral-600);
+  --color-text-subtle: var(--neutral-500);
+  --color-text-on-accent: #ffffff;
+
+  --color-accent: var(--accent-600);
+  --color-accent-hover: var(--accent-700);
+  --color-accent-solid: var(--accent-600);
+  --color-accent-solid-hover: var(--accent-700);
+  --color-accent-subtle: var(--accent-50);
+  --color-accent-subtle-border: var(--accent-200);
+  --color-ring: var(--accent-500);
+
+  --color-success: var(--success-600);
+  --color-success-subtle: var(--success-50);
+  --color-success-border: color-mix(in srgb, var(--success-500) 35%, transparent);
+
+  --color-warning: var(--warning-600);
+  --color-warning-subtle: var(--warning-50);
+  --color-warning-border: color-mix(in srgb, var(--warning-500) 35%, transparent);
+
+  --color-error: var(--error-600);
+  --color-error-subtle: var(--error-50);
+  --color-error-border: color-mix(in srgb, var(--error-500) 35%, transparent);
+
+  --color-info: var(--info-600);
+  --color-info-subtle: var(--info-50);
+  --color-info-border: color-mix(in srgb, var(--info-500) 35%, transparent);
+
+  --shadow-color: 30 20 10;
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.06);
+  --shadow-md: 0 4px 12px rgb(var(--shadow-color) / 0.08), 0 1px 2px rgb(var(--shadow-color) / 0.06);
+  --shadow-lg: 0 12px 32px rgb(var(--shadow-color) / 0.12), 0 2px 6px rgb(var(--shadow-color) / 0.06);
+}
+
+/* ---- Role tokens: explicit LIGHT MODE ------------------------------------
+   Same values as :root above. Exists so a `.light` class can force light mode
+   on a subtree even when an ancestor has `.dark` applied (custom properties
+   otherwise inherit down through the cascade) — used by the Design Lab's
+   side-by-side theme comparison, and available generally as the explicit
+   counterpart to `.dark`. */
+.light {
+  --color-bg: var(--neutral-50);
+  --color-surface: #ffffff;
+  --color-surface-raised: #ffffff;
+  --color-border: var(--neutral-200);
+  --color-border-strong: var(--neutral-300);
+  --color-text: var(--neutral-900);
+  --color-text-muted: var(--neutral-600);
+  --color-text-subtle: var(--neutral-500);
+  --color-text-on-accent: #ffffff;
+
+  --color-accent: var(--accent-600);
+  --color-accent-hover: var(--accent-700);
+  --color-accent-solid: var(--accent-600);
+  --color-accent-solid-hover: var(--accent-700);
+  --color-accent-subtle: var(--accent-50);
+  --color-accent-subtle-border: var(--accent-200);
+  --color-ring: var(--accent-500);
+
+  --color-success: var(--success-600);
+  --color-success-subtle: var(--success-50);
+  --color-success-border: color-mix(in srgb, var(--success-500) 35%, transparent);
+
+  --color-warning: var(--warning-600);
+  --color-warning-subtle: var(--warning-50);
+  --color-warning-border: color-mix(in srgb, var(--warning-500) 35%, transparent);
+
+  --color-error: var(--error-600);
+  --color-error-subtle: var(--error-50);
+  --color-error-border: color-mix(in srgb, var(--error-500) 35%, transparent);
+
+  --color-info: var(--info-600);
+  --color-info-subtle: var(--info-50);
+  --color-info-border: color-mix(in srgb, var(--info-500) 35%, transparent);
+
+  --shadow-color: 30 20 10;
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.06);
+  --shadow-md: 0 4px 12px rgb(var(--shadow-color) / 0.08), 0 1px 2px rgb(var(--shadow-color) / 0.06);
+  --shadow-lg: 0 12px 32px rgb(var(--shadow-color) / 0.12), 0 2px 6px rgb(var(--shadow-color) / 0.06);
+}
+
+/* ---- Role tokens: DARK MODE ---------------------------------------------
+   Applied via the `.dark` class next-themes toggles on <html>, and mirrored
+   under prefers-color-scheme for no-JS/pre-hydration graceful degradation. */
+.dark {
+  --color-bg: var(--neutral-950);
+  --color-surface: var(--neutral-900);
+  --color-surface-raised: var(--neutral-800);
+  --color-border: var(--neutral-800);
+  --color-border-strong: var(--neutral-700);
+  --color-text: var(--neutral-50);
+  --color-text-muted: var(--neutral-400);
+  --color-text-subtle: var(--neutral-500);
+  --color-text-on-accent: #ffffff;
+
+  /* Lighter accent step so it stays legible against a near-black surface. */
+  --color-accent: var(--accent-400);
+  --color-accent-hover: var(--accent-300);
+  --color-accent-solid: var(--accent-500);
+  --color-accent-solid-hover: var(--accent-400);
+  --color-accent-subtle: var(--accent-950);
+  --color-accent-subtle-border: var(--accent-800);
+  --color-ring: var(--accent-400);
+
+  --color-success: #7cc98a;
+  --color-success-subtle: var(--success-900);
+  --color-success-border: color-mix(in srgb, var(--success-500) 45%, transparent);
+
+  --color-warning: #dcae63;
+  --color-warning-subtle: var(--warning-900);
+  --color-warning-border: color-mix(in srgb, var(--warning-500) 45%, transparent);
+
+  --color-error: #e0897a;
+  --color-error-subtle: var(--error-900);
+  --color-error-border: color-mix(in srgb, var(--error-500) 45%, transparent);
+
+  --color-info: #7fa8dd;
+  --color-info-subtle: var(--info-900);
+  --color-info-border: color-mix(in srgb, var(--info-500) 45%, transparent);
+
+  /* Shadows barely read against dark backgrounds; elevation there comes
+     mostly from the surface step-up above, so these stay subtle. */
+  --shadow-color: 0 0 0;
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.3);
+  --shadow-md: 0 4px 16px rgb(var(--shadow-color) / 0.4);
+  --shadow-lg: 0 16px 40px rgb(var(--shadow-color) / 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.light) {
+    --color-bg: var(--neutral-950);
+    --color-surface: var(--neutral-900);
+    --color-surface-raised: var(--neutral-800);
+    --color-border: var(--neutral-800);
+    --color-border-strong: var(--neutral-700);
+    --color-text: var(--neutral-50);
+    --color-text-muted: var(--neutral-400);
+    --color-text-subtle: var(--neutral-500);
+    --color-text-on-accent: #ffffff;
+    --color-accent: var(--accent-400);
+    --color-accent-hover: var(--accent-300);
+    --color-accent-solid: var(--accent-500);
+    --color-accent-solid-hover: var(--accent-400);
+    --color-accent-subtle: var(--accent-950);
+    --color-accent-subtle-border: var(--accent-800);
+    --color-ring: var(--accent-400);
+    --color-success: #7cc98a;
+    --color-success-subtle: var(--success-900);
+    --color-success-border: color-mix(in srgb, var(--success-500) 45%, transparent);
+    --color-warning: #dcae63;
+    --color-warning-subtle: var(--warning-900);
+    --color-warning-border: color-mix(in srgb, var(--warning-500) 45%, transparent);
+    --color-error: #e0897a;
+    --color-error-subtle: var(--error-900);
+    --color-error-border: color-mix(in srgb, var(--error-500) 45%, transparent);
+    --color-info: #7fa8dd;
+    --color-info-subtle: var(--info-900);
+    --color-info-border: color-mix(in srgb, var(--info-500) 45%, transparent);
+    --shadow-color: 0 0 0;
+    --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.3);
+    --shadow-md: 0 4px 16px rgb(var(--shadow-color) / 0.4);
+    --shadow-lg: 0 16px 40px rgb(var(--shadow-color) / 0.5);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "@transcriptioneer/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "license": "UNLICENSED",
+  "description": "Typed fetch wrapper shared by web and mobile for talking to the backend API. Feature-specific methods (auth, files, chat, ...) are added alongside their endpoints in later milestones.",
+  "type": "commonjs",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@transcriptioneer/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@transcriptioneer/config": "workspace:*"
+  }
+}

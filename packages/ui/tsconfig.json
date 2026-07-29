@@ -1,0 +1,9 @@
+{
+  "extends": "@transcriptioneer/config/typescript/library.json",
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "jsx": "react-jsx"
+  },
+  "include": ["src"]
+}
