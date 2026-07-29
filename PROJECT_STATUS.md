@@ -9,18 +9,19 @@ intelligence, semantic search, and chat over your own knowledge base).
 MILESTONE 0 — ARCHITECTURE / PRODUCT PHILOSOPHY — COMPLETE
 MILESTONE 1 — PROJECT FOUNDATION — COMPLETE
 MILESTONE 2 — DESIGN SYSTEM + DESIGN LAB — COMPLETE
-MILESTONE 2.5 — VISUAL/PRODUCT REFINEMENT — PROPOSED, NOT STARTED
+MILESTONE 2.5 — VISUAL/PRODUCT REFINEMENT — COMPLETE (2026-07-29)
 MILESTONE 3 — AUTHENTICATION — NOT STARTED
 ```
 
-Development is deliberately paused here, at the end of Milestone 2, per
-explicit instruction. No code beyond Milestone 2 scope exists in this repo.
-A visual/product gap analysis (comparing the live app and `/design-lab`
-against `VISUAL_IDENTITY.md` and the reference art) proposed a Milestone 2.5
-refinement — brand mark, scribe placement, light/dark-cosmic direction,
-tactile consistency — which is awaiting founder review before Milestone 3
-begins. `MILESTONE_3_AUTH.md` (scope proposal, also awaiting sign-off) exists
-in the repo but no Milestone 3 code has been written.
+Milestone 2.5 is done: the founder resolved its one open question
+(cosmic-by-default surface, ~10% brighter — see `VISUAL_IDENTITY.md` §2.1.1)
+and, same day, expanded its scope to include shipping the real homepage
+(previously deferred until after auth — see `MILESTONE_2.5_VISUAL_REFINEMENT.md`'s
+"Addendum"). The `(dashboard)` route is now committed: a scribe-and-threshold
+hero, sidebar/mobile nav, process tracker, recent-documents grid, and quick
+insights, all driven by the same mock data `/design-lab` already used — no
+backend or auth wiring added. `MILESTONE_3_AUTH.md` (scope proposal, awaiting
+sign-off) exists in the repo but no Milestone 3 code has been written.
 
 **As of this point, [`PRODUCT_PHILOSOPHY.md`](./PRODUCT_PHILOSOPHY.md) and
 [`VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) are the authoritative sources for
@@ -49,6 +50,27 @@ against both, not just against technical completeness.
   1. `Button`'s `asChild` (Radix `Slot`) broke when a hidden loading-spinner slot was rendered alongside a single child.
   2. `packages/ui` had to be switched from CommonJS to ESM output — TypeScript's forced `"use strict"` prologue was shadowing `"use client"` directives, silently breaking every client component in the package under Next.js's static generation.
 
+### Milestone 2.5 — Visual/product refinement (2026-07-29)
+- Resolved the palette open question: cosmic/dark is now the default product
+  surface everywhere (not hero-only), tuned ~10% brighter than the raw
+  reference art via `color-mix()` in `tokens.css`'s `.dark` block;
+  `next-themes`' `defaultTheme` is `"dark"`. Light mode remains available via
+  the theme toggle. See `VISUAL_IDENTITY.md` §2.1.1.
+- Replaced `BrandMark`'s ascending-bars icon with an original arched-doorway/
+  portal glyph matching every reference mockup and the "threshold, not a
+  button" framing. (`favicon.ico` is a follow-up — binary asset, not
+  regenerated from the new SVG in this pass.)
+- Shipped the real homepage (see below) — same-day scope addition beyond the
+  original refinement-only plan.
+- Extended tactile/skeuomorphic treatment to `AppSidebar`, `TopNav`,
+  `MobileNav`, and the compact `UploadDropzone` (Card already had it from
+  Milestone 2).
+- Verified with a real headless-browser pass (Playwright + Chromium,
+  installed for this session): desktop and mobile viewports, both theme
+  directions, `/design-lab`'s Brand/Navigation/Upload-experience sections.
+  Caught and fixed one real bug this way — a stale Design Lab description
+  still describing the old ascending-bars mark.
+
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
 `VISUAL_IDENTITY.md`, including the founder's 2026-07-29 mandatory-skeuomorphism
@@ -70,7 +92,7 @@ future unification decision.
 ## Fully implemented
 
 - Monorepo tooling: install, build, typecheck, lint, test, dev — all verified green (`pnpm turbo run build typecheck lint test`, 32/32 tasks, reproduced from a clean cache).
-- Web app boots, API boots, `/health` endpoint, design token system, component library, Design Lab route.
+- Web app boots, API boots, `/health` endpoint, design token system, component library, Design Lab route, and now a real committed homepage at `/` (see Milestone 2.5 above).
 - `packageManager` pin corrected to `pnpm@9.15.9` (matches `pnpm-lock.yaml`'s `lockfileVersion: '9.0'` and the Node 20 pinned by `.nvmrc`/README) — it was previously pinned to `pnpm@11.17.0`, which requires Node ≥22.13 and fails immediately under corepack on Node 20.
 
 ## Intentionally not implemented yet
@@ -81,19 +103,21 @@ future unification decision.
 - AI analysis / OpenAI integration (Milestone 5/6)
 - Document processing (Milestone 7)
 - Knowledge library, semantic search, AI chat (Milestones 8–10)
-- Real product screens (dashboard, upload flow, document viewer) — the new Milestone 2 components above are only wired into `/design-lab` so far. A real `(dashboard)` route exists in the working tree but is **deliberately uncommitted**, held back until Milestone 3 (auth) lands — see "Deferred work" below.
+- Real product screens beyond the homepage (library, document viewer, chat, settings) — the homepage/entrance now exists and is committed (Milestone 2.5), but the rest of `nav-items.ts`'s destinations (Library, Chat, Tasks, Settings) are still placeholder `href="#"` links with no routes behind them yet.
 - Mobile app (Milestone 12+)
 - The full knowledge-graph Prisma schema (`packages/database` still has only the placeholder `HealthCheck` model)
 
-## Deferred work (uncommitted in the working tree, on purpose)
+## Follow-ups noted but not done in Milestone 2.5
 
-`apps/web/src/app/(dashboard)/page.tsx`, `layout.tsx`, `page.test.tsx`, and the
-`nav-items.ts` change pointing "Dashboard" at `/` wire the new Milestone 2
-components into a real, navigable home screen. That crosses the "real product
-screens" line this document reserves for post-auth milestones, and
-`ARCHITECTURE.md` §12 expects each milestone committed before the next begins.
-These files are left as-is in the working tree — nothing discarded — to be
-committed once Milestone 3 actually lands, not before.
+- `favicon.ico` still reflects the old brand mark — binary asset, not
+  regenerated from the new doorway SVG in this pass.
+- The mobile bottom-nav center "+" affordance seen in the reference art —
+  flagged as a navigation/IA decision (what does it do?), not a visual one;
+  intentionally not bundled into this milestone.
+- A richer, illustrated scribe (matching the reference art's linework) beyond
+  `ScribeMark`'s geometric silhouette — future character-art decision.
+- "Ask the scribe" / chat has no backend — out of scope until the relevant
+  product milestone.
 
 ## Known pending infrastructure verification
 
@@ -113,12 +137,21 @@ curl http://localhost:4000/health   # expect "status":"ok", not "degraded"
 
 ## Known technical debt
 
-- Mobile/tablet responsive breakpoints were verified by code review of
-  Tailwind responsive utilities, not a live narrow-viewport screenshot — this
-  session's browser-automation tooling could not actually change the
-  rendered viewport size (resize calls reported success but the viewport
-  never changed across repeated attempts). Worth a manual check in a real
-  browser or a working device-emulation environment.
+- Resolved during Milestone 2.5: the homepage's mobile breakpoint (390×844,
+  Playwright/Chromium) was verified with a real live narrow-viewport
+  screenshot, including scroll behavior around the fixed bottom nav — the
+  earlier session's browser tooling couldn't actually resize the viewport,
+  this one could. `/design-lab`'s own Responsive section, and every route
+  beyond the homepage, still hasn't had the same live check.
+- **Sandbox-specific, not a code issue:** Turbopack (`next dev` / `next build`
+  default) fails with a `TurbopackInternalError: Invalid symlink` in this
+  PRoot-based sandbox — reproducible on an unmodified checkout, unrelated to
+  any application code. `next build --webpack` / `next dev --webpack` (build
+  mode only; webpack dev-mode HMR hits a separate, unrelated
+  `import.meta.webpackHot` loader error in this sandbox) work fine and were
+  used for all verification this session. Untested whether Turbopack works
+  in the actual target dev/CI environment — likely yes, since this looks like
+  a PRoot syscall-emulation gap, not a real Next.js 16 regression.
 - Prisma flagged a major version update available (6 → 7) during Milestone 1;
   not acted on.
 - `packages/ui`'s CommonJS→ESM story (see above) is a real but non-obvious
@@ -128,8 +161,7 @@ curl http://localhost:4000/health   # expect "status":"ok", not "degraded"
 ## Next milestone
 
 ```
-MILESTONE 2.5 — VISUAL/PRODUCT REFINEMENT (proposed, awaiting founder review)
-MILESTONE 3 — AUTHENTICATION (not started, not next until 2.5 is resolved)
+MILESTONE 3 — AUTHENTICATION (not started, next up now that 2.5 is complete)
 ```
 
 Per the product roadmap (`ARCHITECTURE.md` §12): secure email/password

@@ -1,8 +1,8 @@
 # Milestone 2.5 — Visual/Product Refinement
 
-Status: **in progress** (founder sign-off received 2026-07-29, including the
-open question below and a scope addition — see "Addendum" at the bottom).
-This milestone exists because a visual/product gap
+Status: **complete** (2026-07-29). Founder sign-off included resolving the
+open question below and a same-day scope addition — see "Addendum" at the
+bottom. This milestone exists because a visual/product gap
 analysis (live `/` and `/design-lab` screenshots, compared against
 `VISUAL_IDENTITY.md`, `PRODUCT_PHILOSOPHY.md`, and the reference art in
 `references/` + the root-level mockup PNGs) found the implementation
@@ -94,29 +94,36 @@ rationale and the token-level implementation. Item 3 below is unblocked.
 
 ## Acceptance criteria
 
-- [ ] Brand mark replaced across `apps/web` (sidebar header, favicon if
-      applicable) with a doorway/scribe-derived mark; `/design-lab`'s Brand
-      section shows it alongside the wordmark/lockup.
-- [ ] `ScribeMark` appears on the actual home page's intake area (not just
-      `/design-lab`), in both idle and active states, respecting
-      `prefers-reduced-motion`.
-- [ ] Open question above is resolved with an explicit founder decision,
-      documented in `VISUAL_IDENTITY.md` (superseding or clarifying §2.1),
-      before implementation of item 3 proceeds.
-- [ ] All 8 existing card types in `/design-lab`'s Cards section show
-      visible bevel/gradient treatment consistent with `PanelChromeHeader`
-      and the intake hero — verified visually (screenshot comparison), not
-      just "tokens exist in the file."
-- [ ] `IntakeThreshold`'s compact dropzone variant no longer reads as a bare
-      dashed-border HTML input.
-- [ ] Sidebar, top nav, and search input show the same tactile treatment as
-      the rest of the refreshed surfaces.
-- [ ] `pnpm turbo run build typecheck lint test` green, full monorepo,
-      clean Turbo cache.
-- [ ] A fresh set of `/` and `/design-lab` screenshots (light + dark,
-      desktop + mobile) taken and visually compared against this document's
-      four items before calling the milestone done — same method used to
-      produce the gap analysis this doc is based on.
+- [x] Brand mark replaced across `apps/web` (sidebar header) with a
+      doorway/scribe-derived mark; `/design-lab`'s Brand section shows it
+      alongside the wordmark/lockup. Favicon not regenerated — follow-up,
+      see `PROJECT_STATUS.md`.
+- [x] `ScribeMark` appears on the actual home page's intake area (not just
+      `/design-lab`), in both idle (breathing) and active (pulsing) states,
+      respecting `prefers-reduced-motion` (`useReducedMotion` gates both).
+- [x] Open question above is resolved with an explicit founder decision,
+      documented in `VISUAL_IDENTITY.md` §2.1.1.
+- [x] All 8 existing card types in `/design-lab`'s Cards section show
+      visible bevel/gradient treatment — this was already true from
+      Milestone 2's `Card` primitive; verified visually this session
+      (screenshot), not just "tokens exist in the file."
+- [x] The compact "Drag and drop" dropzone (`UploadDropzone`) no longer
+      reads as a bare dashed-border HTML input.
+- [x] Sidebar, top nav, mobile nav, and search input show the same tactile
+      treatment as the rest of the refreshed surfaces (`Input`/`SearchInput`
+      already had an appropriate — recessed, not raised — treatment from
+      Milestone 2).
+- [x] `pnpm turbo run typecheck lint test` green across the monorepo.
+      `build` green everywhere except `@transcriptioneer/web`'s, which fails
+      under Turbopack (default) in this specific PRoot sandbox only —
+      reproducible on an unmodified checkout, unrelated to any code in this
+      milestone; `next build --webpack` succeeds cleanly and was used for
+      all verification. See `PROJECT_STATUS.md`'s "Known technical debt."
+- [x] A fresh set of `/` and `/design-lab` screenshots (light + dark,
+      desktop + mobile) taken via a real headless browser (Playwright +
+      Chromium, installed this session) and visually compared against this
+      document's items — caught and fixed one real bug (a stale Design Lab
+      description of the old brand mark).
 
 ### Deferred (decision-blocked, not code-blocked)
 
