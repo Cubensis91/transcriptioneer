@@ -1,7 +1,9 @@
-// Milestone 1 foundation only. The full knowledge-graph schema (users,
-// organizations, files, transcripts, knowledge items, chunks/embeddings,
-// conversations, etc. — see ARCHITECTURE.md §4) is introduced incrementally
-// starting with authentication in Milestone 3.
+// Milestone 3: authentication. The real knowledge-graph schema begins here
+// (User/Organization/OrganizationMember), replacing the Milestone 1
+// HealthCheck placeholder. The rest of the graph (SourceFile, ProcessingJob,
+// Transcript, KnowledgeItem, Chunk, Conversation, etc. — see
+// ARCHITECTURE.md §4) lands incrementally starting Milestone 4, once a
+// feature actually needs each entity.
 
 generator client {
   provider        = "prisma-client-js"
@@ -15,10 +17,70 @@ datasource db {
   extensions = [vector]
 }
 
-/// Foundation-only model used to prove migrations, connection pooling, and
-/// the pgvector extension are wired correctly end to end. Superseded once
-/// real domain models land.
-model HealthCheck {
+enum OrgRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  /// Null for accounts created via OAuth only (no password ever set).
+  passwordHash String?
+  name         String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  memberships   OrganizationMember[]
+  refreshTokens RefreshToken[]
+}
+
+model Organization {
   id        String   @id @default(uuid())
-  checkedAt DateTime @default(now())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members OrganizationMember[]
+}
+
+/// Multi-tenant from day one (ARCHITECTURE.md §7) — every later entity
+/// (files, transcripts, knowledge items) is scoped through this table via
+/// organizationId, not directly through User, so data isolation isn't
+/// retrofitted once teams/sharing ship.
+model OrganizationMember {
+  id             String   @id @default(uuid())
+  userId         String
+  organizationId String
+  role           OrgRole  @default(MEMBER)
+  createdAt      DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([organizationId])
+}
+
+/// Refresh tokens are stored hashed (never the raw token), same principle as
+/// password hashing — a database leak alone shouldn't let an attacker mint
+/// sessions. `replacedByTokenId` chains rotations so presenting an
+/// already-rotated token (a signal of theft) can be detected and the whole
+/// chain revoked, not just the one token — ARCHITECTURE.md §7's session
+/// model ("rotating refresh token").
+model RefreshToken {
+  id                String    @id @default(uuid())
+  userId            String
+  tokenHash         String    @unique
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  replacedByTokenId String?   @unique
+  createdAt         DateTime  @default(now())
+
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  replacedByToken RefreshToken? @relation("TokenRotation", fields: [replacedByTokenId], references: [id])
+  replacesToken   RefreshToken? @relation("TokenRotation")
+
+  @@index([userId])
 }
