@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { BrandLockup, BrandMark, Wordmark } from "@/components/brand-mark";
+import { ScribeMark } from "@/components/scribe-mark";
 import { Section, SubLabel } from "./section";
 
 const neutralSwatches = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
@@ -42,6 +43,20 @@ export function BrandSection() {
             <div className="flex flex-col items-center gap-2">
               <BrandLockup />
               <span className="text-xs text-text-subtle">Lockup</span>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <SubLabel>Scribe (placeholder character)</SubLabel>
+          <div className="flex flex-wrap items-center gap-8 rounded-lg border border-border bg-surface p-6">
+            <div className="flex flex-col items-center gap-2">
+              <ScribeMark />
+              <span className="text-xs text-text-subtle">Idle</span>
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <ScribeMark state="analyzing" />
+              <span className="text-xs text-text-subtle">Active (eyes pulse)</span>
             </div>
           </div>
         </div>

@@ -13,6 +13,10 @@
  *      surface is lighter than bg in light mode, but lighter than bg in a
  *      different way in dark mode too) rather than mechanically inverting
  *      every value. That's the "don't just invert colors" requirement.
+ *   3. Tactile/skeuomorphic tokens (bevel, surface gradients, inset rings,
+ *      decorative chrome dots, hero gradient) — every primary control must
+ *      show volume/material/bevel per the product's visual identity spec;
+ *      these are additive building blocks components compose from.
  */
 
 :root {
@@ -29,18 +33,26 @@
   --neutral-900: #1c1917;
   --neutral-950: #0c0a09;
 
-  /* ---- Raw accent scale ("signal" — muted petrol teal) ---------------- */
-  --accent-50: #eefbf9;
-  --accent-100: #d3f3ee;
-  --accent-200: #a9e6dd;
-  --accent-300: #78d2c6;
-  --accent-400: #43b3a7;
-  --accent-500: #27948a;
-  --accent-600: #1f7972;
-  --accent-700: #1c625d;
-  --accent-800: #194f4b;
-  --accent-900: #17403d;
-  --accent-950: #082523;
+  /* ---- Raw accent scale ("signal" — blue) ------------------------------
+     Re-derived from the product's visual-identity spec (~#2884E8, sampled
+     from a reference mockup) — supersedes an earlier muted-teal scale that
+     predated that spec. accent-500 is the literal spec value; accent-600
+     (H211 S81 L46, #1671d4) is a darkened step used wherever the accent
+     sits *behind* white text (solid buttons, solid badges) — the literal
+     #2884E8 only clears ~3.8:1 against white, short of WCAG AA's 4.5:1 for
+     normal text, while accent-600 clears ~4.8:1. Every other step holds
+     hue ≈211° and interpolates lightness/saturation around those two. */
+  --accent-50: #f0f7ff;
+  --accent-100: #dcecfe;
+  --accent-200: #b6d7fc;
+  --accent-300: #82baf7;
+  --accent-400: #4c9bf1;
+  --accent-500: #2884e8;
+  --accent-600: #1671d4;
+  --accent-700: #155ead;
+  --accent-800: #134a86;
+  --accent-900: #103965;
+  --accent-950: #0c2540;
 
   /* ---- Semantic hues (kept distinct from the brand accent) ------------ */
   --success-500: #3f9151;
@@ -118,9 +130,47 @@
   --color-info-border: color-mix(in srgb, var(--info-500) 35%, transparent);
 
   --shadow-color: 30 20 10;
-  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.06);
-  --shadow-md: 0 4px 12px rgb(var(--shadow-color) / 0.08), 0 1px 2px rgb(var(--shadow-color) / 0.06);
-  --shadow-lg: 0 12px 32px rgb(var(--shadow-color) / 0.12), 0 2px 6px rgb(var(--shadow-color) / 0.06);
+
+  /* Bevel highlight/lowlight are the light/dark edges that read as a
+     physical chamfer; shadow-sm/md/lg fold them in as inset layers
+     alongside the existing outer drop shadow so every current consumer
+     (Button, Card, Select popover, ...) gains volume with zero code
+     changes. Larger/standalone bevel needs (e.g. a pressed state that
+     wants a *different* bevel than resting) use the tokens directly. */
+  --bevel-highlight: rgb(255 255 255 / 0.55);
+  --bevel-highlight-strong: rgb(255 255 255 / 0.75);
+  --bevel-lowlight: rgb(30 20 10 / 0.1);
+
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.08), inset 0 1px 0 0 var(--bevel-highlight), inset 0 -1px 0 0 var(--bevel-lowlight);
+  --shadow-md: 0 4px 12px rgb(var(--shadow-color) / 0.1), 0 1px 2px rgb(var(--shadow-color) / 0.06), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
+  --shadow-lg: 0 12px 32px rgb(var(--shadow-color) / 0.14), 0 2px 6px rgb(var(--shadow-color) / 0.06), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
+
+  /* Surface materials — two-stop gradients standing in for "raised"
+     (resting), "pressed" (active/pushed-in), and "accent" (solid-fill
+     button) surfaces, per the mandatory tactile/skeuomorphic direction. */
+  --surface-gradient-raised: linear-gradient(180deg, #ffffff 0%, #fafaf9 100%);
+  --surface-gradient-pressed: linear-gradient(180deg, #f0efed 0%, #ffffff 100%);
+  --surface-gradient-accent: linear-gradient(180deg, var(--accent-500) 0%, var(--accent-600) 100%);
+
+  /* Thin inset ring simulating a chamfered edge, layered in addition to
+     --color-border (not a replacement for it). */
+  --ring-inset: rgb(255 255 255 / 0.6);
+  --ring-inset-strong: rgb(30 20 10 / 0.14);
+
+  /* Decorative traffic-light dots for panel/card "window chrome" headers.
+     Fixed hex, deliberately independent of --color-error/warning/success —
+     these are decoration, never a real status signal, and must stay
+     visually distinct from genuine error/warning/success states. */
+  --chrome-dot-red: #ec6a5e;
+  --chrome-dot-amber: #f5bd4f;
+  --chrome-dot-green: #61c454;
+
+  /* Cosmic hero gradient — scoped to hero/intake surfaces only, not a
+     general-purpose background. */
+  --hero-gradient-cosmic: linear-gradient(165deg, #0c2540 0%, #134a86 35%, #1671d4 68%, #2884e8 100%);
+
+  /* Optional subtle grain overlay, off by default in light mode. */
+  --texture-grain-opacity: 0;
 }
 
 /* ---- Role tokens: explicit LIGHT MODE ------------------------------------
@@ -165,9 +215,29 @@
   --color-info-border: color-mix(in srgb, var(--info-500) 35%, transparent);
 
   --shadow-color: 30 20 10;
-  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.06);
-  --shadow-md: 0 4px 12px rgb(var(--shadow-color) / 0.08), 0 1px 2px rgb(var(--shadow-color) / 0.06);
-  --shadow-lg: 0 12px 32px rgb(var(--shadow-color) / 0.12), 0 2px 6px rgb(var(--shadow-color) / 0.06);
+
+  --bevel-highlight: rgb(255 255 255 / 0.55);
+  --bevel-highlight-strong: rgb(255 255 255 / 0.75);
+  --bevel-lowlight: rgb(30 20 10 / 0.1);
+
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.08), inset 0 1px 0 0 var(--bevel-highlight), inset 0 -1px 0 0 var(--bevel-lowlight);
+  --shadow-md: 0 4px 12px rgb(var(--shadow-color) / 0.1), 0 1px 2px rgb(var(--shadow-color) / 0.06), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
+  --shadow-lg: 0 12px 32px rgb(var(--shadow-color) / 0.14), 0 2px 6px rgb(var(--shadow-color) / 0.06), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
+
+  --surface-gradient-raised: linear-gradient(180deg, #ffffff 0%, #fafaf9 100%);
+  --surface-gradient-pressed: linear-gradient(180deg, #f0efed 0%, #ffffff 100%);
+  --surface-gradient-accent: linear-gradient(180deg, var(--accent-500) 0%, var(--accent-600) 100%);
+
+  --ring-inset: rgb(255 255 255 / 0.6);
+  --ring-inset-strong: rgb(30 20 10 / 0.14);
+
+  --chrome-dot-red: #ec6a5e;
+  --chrome-dot-amber: #f5bd4f;
+  --chrome-dot-green: #61c454;
+
+  --hero-gradient-cosmic: linear-gradient(165deg, #0c2540 0%, #134a86 35%, #1671d4 68%, #2884e8 100%);
+
+  --texture-grain-opacity: 0;
 }
 
 /* ---- Role tokens: DARK MODE ---------------------------------------------
@@ -187,8 +257,12 @@
   /* Lighter accent step so it stays legible against a near-black surface. */
   --color-accent: var(--accent-400);
   --color-accent-hover: var(--accent-300);
-  --color-accent-solid: var(--accent-500);
-  --color-accent-solid-hover: var(--accent-400);
+  /* accent-600 (not accent-500) behind white button/badge text — accent-500
+     is the literal spec blue but only clears ~3.8:1 against white text,
+     short of AA; accent-600 clears ~4.8:1. Hover goes to accent-500 so it
+     still reads as a highlight, not a further darken, against a dark page. */
+  --color-accent-solid: var(--accent-600);
+  --color-accent-solid-hover: var(--accent-500);
   --color-accent-subtle: var(--accent-950);
   --color-accent-subtle-border: var(--accent-800);
   --color-ring: var(--accent-400);
@@ -210,11 +284,32 @@
   --color-info-border: color-mix(in srgb, var(--info-500) 45%, transparent);
 
   /* Shadows barely read against dark backgrounds; elevation there comes
-     mostly from the surface step-up above, so these stay subtle. */
+     mostly from the surface step-up above, so the outer shadow stays
+     subtle — the inset bevel layers do most of the "tactile" work here. */
   --shadow-color: 0 0 0;
-  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.3);
-  --shadow-md: 0 4px 16px rgb(var(--shadow-color) / 0.4);
-  --shadow-lg: 0 16px 40px rgb(var(--shadow-color) / 0.5);
+
+  --bevel-highlight: rgb(255 255 255 / 0.08);
+  --bevel-highlight-strong: rgb(255 255 255 / 0.14);
+  --bevel-lowlight: rgb(0 0 0 / 0.35);
+
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.3), inset 0 1px 0 0 var(--bevel-highlight), inset 0 -1px 0 0 var(--bevel-lowlight);
+  --shadow-md: 0 4px 16px rgb(var(--shadow-color) / 0.4), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
+  --shadow-lg: 0 16px 40px rgb(var(--shadow-color) / 0.5), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
+
+  --surface-gradient-raised: linear-gradient(180deg, var(--neutral-800) 0%, var(--neutral-900) 100%);
+  --surface-gradient-pressed: linear-gradient(180deg, var(--neutral-950) 0%, var(--neutral-800) 100%);
+  --surface-gradient-accent: linear-gradient(180deg, var(--accent-500) 0%, var(--accent-600) 100%);
+
+  --ring-inset: rgb(255 255 255 / 0.1);
+  --ring-inset-strong: rgb(0 0 0 / 0.45);
+
+  --chrome-dot-red: #ec6a5e;
+  --chrome-dot-amber: #f5bd4f;
+  --chrome-dot-green: #61c454;
+
+  --hero-gradient-cosmic: linear-gradient(165deg, #060d19 0%, #0c2540 35%, #134a86 68%, #1671d4 100%);
+
+  --texture-grain-opacity: 0.03;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -230,8 +325,8 @@
     --color-text-on-accent: #ffffff;
     --color-accent: var(--accent-400);
     --color-accent-hover: var(--accent-300);
-    --color-accent-solid: var(--accent-500);
-    --color-accent-solid-hover: var(--accent-400);
+    --color-accent-solid: var(--accent-600);
+    --color-accent-solid-hover: var(--accent-500);
     --color-accent-subtle: var(--accent-950);
     --color-accent-subtle-border: var(--accent-800);
     --color-ring: var(--accent-400);
@@ -248,9 +343,22 @@
     --color-info-subtle: var(--info-900);
     --color-info-border: color-mix(in srgb, var(--info-500) 45%, transparent);
     --shadow-color: 0 0 0;
-    --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.3);
-    --shadow-md: 0 4px 16px rgb(var(--shadow-color) / 0.4);
-    --shadow-lg: 0 16px 40px rgb(var(--shadow-color) / 0.5);
+    --bevel-highlight: rgb(255 255 255 / 0.08);
+    --bevel-highlight-strong: rgb(255 255 255 / 0.14);
+    --bevel-lowlight: rgb(0 0 0 / 0.35);
+    --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.3), inset 0 1px 0 0 var(--bevel-highlight), inset 0 -1px 0 0 var(--bevel-lowlight);
+    --shadow-md: 0 4px 16px rgb(var(--shadow-color) / 0.4), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
+    --shadow-lg: 0 16px 40px rgb(var(--shadow-color) / 0.5), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
+    --surface-gradient-raised: linear-gradient(180deg, var(--neutral-800) 0%, var(--neutral-900) 100%);
+    --surface-gradient-pressed: linear-gradient(180deg, var(--neutral-950) 0%, var(--neutral-800) 100%);
+    --surface-gradient-accent: linear-gradient(180deg, var(--accent-500) 0%, var(--accent-600) 100%);
+    --ring-inset: rgb(255 255 255 / 0.1);
+    --ring-inset-strong: rgb(0 0 0 / 0.45);
+    --chrome-dot-red: #ec6a5e;
+    --chrome-dot-amber: #f5bd4f;
+    --chrome-dot-green: #61c454;
+    --hero-gradient-cosmic: linear-gradient(165deg, #060d19 0%, #0c2540 35%, #134a86 68%, #1671d4 100%);
+    --texture-grain-opacity: 0.03;
   }
 }
 

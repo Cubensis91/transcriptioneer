@@ -12,12 +12,23 @@ export const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "bg-accent-solid text-text-on-accent shadow-sm hover:bg-accent-solid-hover",
+        // Gradient fill + evolved (bevelled) shadow gives the "physical
+        // button" read; the active: pair simulates a press by inverting to
+        // an inset-only shadow and nudging the button down one pixel.
+        primary:
+          "bg-accent-solid bg-[image:var(--surface-gradient-accent)] text-text-on-accent shadow-md " +
+          "hover:bg-accent-solid-hover active:translate-y-px active:shadow-[inset_0_2px_4px_rgb(0_0_0/0.3)]",
         secondary:
-          "bg-surface text-text border border-border-strong shadow-sm hover:bg-surface-raised hover:border-border-strong",
-        tertiary: "bg-accent-subtle text-accent hover:bg-accent-subtle-border/40",
-        ghost: "text-text-muted hover:bg-surface-raised hover:text-text",
-        destructive: "bg-error text-text-on-accent shadow-sm hover:opacity-90",
+          "bg-surface bg-[image:var(--surface-gradient-raised)] text-text border border-border-strong shadow-md " +
+          "hover:bg-surface-raised hover:border-border-strong active:translate-y-px active:bg-[image:var(--surface-gradient-pressed)] active:shadow-[inset_0_2px_4px_rgb(0_0_0/0.12)]",
+        // Tertiary/ghost are deliberately de-emphasized actions — full
+        // bevel at rest would flatten the hierarchy the tactile treatment
+        // is meant to create, so they only pick up a bevel on hover/focus.
+        tertiary: "bg-accent-subtle text-accent hover:bg-accent-subtle-border/40 hover:shadow-sm",
+        ghost: "text-text-muted hover:bg-surface-raised hover:text-text hover:shadow-sm",
+        destructive:
+          "bg-error bg-[image:linear-gradient(180deg,var(--error-500),var(--color-error))] text-text-on-accent shadow-md " +
+          "hover:opacity-90 active:translate-y-px active:shadow-[inset_0_2px_4px_rgb(0_0_0/0.3)]",
       },
       size: {
         sm: "h-8 px-3 text-xs [&_svg]:size-3.5",

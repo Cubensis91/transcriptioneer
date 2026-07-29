@@ -15,6 +15,7 @@ export const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       "flex h-10 w-full items-center justify-between gap-2 rounded-md border border-border-strong bg-surface px-3 py-2 text-sm text-text",
+      "shadow-[inset_0_1px_2px_rgb(var(--shadow-color)/0.1),inset_0_1px_0_0_var(--bevel-lowlight)]",
       "transition-colors duration-(--duration-fast) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       "disabled:cursor-not-allowed disabled:opacity-50 data-[placeholder]:text-text-subtle",
       className,
@@ -39,6 +40,7 @@ export const SelectContent = React.forwardRef<
       position={position}
       className={cn(
         "relative z-50 min-w-[8rem] overflow-hidden rounded-md border border-border bg-surface-raised text-text shadow-lg",
+        "bg-[image:var(--surface-gradient-raised)] ring-1 ring-inset ring-[var(--ring-inset)]",
         "data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         position === "popper" &&
           "data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1",

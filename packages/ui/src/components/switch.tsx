@@ -10,8 +10,9 @@ export const Switch = React.forwardRef<
     ref={ref}
     className={cn(
       "peer inline-flex h-6 w-10 shrink-0 items-center rounded-full border border-transparent bg-border-strong transition-colors duration-(--duration-base)",
+      "shadow-[inset_0_1px_2px_rgb(var(--shadow-color)/0.15)]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-bg",
-      "data-[state=checked]:bg-accent-solid disabled:cursor-not-allowed disabled:opacity-50",
+      "data-[state=checked]:bg-accent-solid data-[state=checked]:bg-[image:var(--surface-gradient-accent)] data-[state=checked]:shadow-none disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}
     {...props}

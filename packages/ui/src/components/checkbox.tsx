@@ -11,8 +11,9 @@ export const Checkbox = React.forwardRef<
     ref={ref}
     className={cn(
       "peer size-4 shrink-0 rounded-sm border border-border-strong bg-surface transition-colors duration-(--duration-fast)",
+      "shadow-[inset_0_1px_1px_rgb(var(--shadow-color)/0.12)]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-      "data-[state=checked]:bg-accent-solid data-[state=checked]:border-accent-solid data-[state=checked]:text-text-on-accent",
+      "data-[state=checked]:bg-accent-solid data-[state=checked]:bg-[image:var(--surface-gradient-accent)] data-[state=checked]:border-accent-solid data-[state=checked]:text-text-on-accent data-[state=checked]:shadow-none",
       "disabled:cursor-not-allowed disabled:opacity-50",
       className,
     )}

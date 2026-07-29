@@ -19,6 +19,7 @@ export const RadioGroupItem = React.forwardRef<
     ref={ref}
     className={cn(
       "size-4 shrink-0 rounded-full border border-border-strong bg-surface transition-colors duration-(--duration-fast)",
+      "shadow-[inset_0_1px_1px_rgb(var(--shadow-color)/0.12)]",
       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
       "data-[state=checked]:border-accent-solid",
       "disabled:cursor-not-allowed disabled:opacity-50",

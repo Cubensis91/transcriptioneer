@@ -1,5 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@transcriptioneer/ui";
 import { AiInsightCard } from "@/components/cards/ai-insight-card";
+import { PanelChromeHeader } from "@/components/chrome/panel-chrome-header";
 import { AudioCard } from "@/components/cards/audio-card";
 import { DecisionCard } from "@/components/cards/decision-card";
 import { DocumentCard } from "@/components/cards/document-card";
@@ -15,6 +16,18 @@ export function CardsSection() {
   return (
     <Section id="cards" title="Cards">
       <div className="flex flex-col gap-8">
+        <div>
+          <SubLabel>Panel chrome header</SubLabel>
+          <Card className="max-w-sm overflow-hidden">
+            <PanelChromeHeader title="Recent documents" />
+            <CardContent>
+              <p className="text-sm text-text-muted">
+                Decorative traffic-light strip for major panels — composed around Card, not part of it.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
         <div>
           <SubLabel>Basic card</SubLabel>
           <Card className="max-w-sm">

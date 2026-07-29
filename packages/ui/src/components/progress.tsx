@@ -15,11 +15,17 @@ export function Progress({ value, max = 100, className, ...props }: ProgressProp
       aria-valuenow={value}
       aria-valuemin={0}
       aria-valuemax={max}
-      className={cn("h-2 w-full overflow-hidden rounded-full bg-surface-raised", className)}
+      className={cn(
+        "h-2 w-full overflow-hidden rounded-full bg-surface-raised shadow-[inset_0_1px_2px_rgb(var(--shadow-color)/0.12)]",
+        className,
+      )}
       {...props}
     >
       <div
-        className="h-full rounded-full bg-accent-solid transition-[width] duration-(--duration-slow) ease-(--ease-out-token)"
+        className={cn(
+          "h-full rounded-full bg-accent-solid bg-[image:var(--surface-gradient-accent)] transition-[width]",
+          "shadow-[inset_0_1px_0_0_var(--bevel-highlight)] duration-(--duration-slow) ease-(--ease-out-token)",
+        )}
         style={{ width: `${percent}%` }}
       />
     </div>
