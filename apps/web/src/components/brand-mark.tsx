@@ -1,9 +1,11 @@
 import { cn } from "@transcriptioneer/ui";
 
 /**
- * Placeholder original mark: a rounded tile holding three ascending bars —
- * a quiet nod to turning raw audio (waveform) into structured knowledge
- * (rising, ordered bars) rather than a literal microphone/sound-wave icon.
+ * Original mark: an arched doorway/portal on a rounded tile — the visual
+ * motif every reference mockup uses, and a literal echo of VISUAL_IDENTITY.md
+ * §3's framing of the intake experience as "a threshold, not a button."
+ * The inner step line reads as the doorway's threshold at small sizes
+ * without adding detail that would blur out at favicon scale.
  */
 export function BrandMark({ className }: { className?: string }) {
   return (
@@ -14,9 +16,8 @@ export function BrandMark({ className }: { className?: string }) {
       aria-label="Transcriptioneer"
     >
       <rect width="32" height="32" rx="9" className="fill-accent-solid" />
-      <rect x="8" y="17" width="4" height="8" rx="1.5" className="fill-white/90" />
-      <rect x="14" y="11" width="4" height="14" rx="1.5" className="fill-white" />
-      <rect x="20" y="14" width="4" height="11" rx="1.5" className="fill-white/70" />
+      <path d="M10 25 L10 14 A6 6 0 0 1 22 14 L22 25 Z" className="fill-white/95" />
+      <rect x="10" y="21.5" width="12" height="1.6" className="fill-accent-solid/40" />
     </svg>
   );
 }
