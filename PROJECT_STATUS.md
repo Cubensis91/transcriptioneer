@@ -70,6 +70,18 @@ against both, not just against technical completeness.
   directions, `/design-lab`'s Brand/Navigation/Upload-experience sections.
   Caught and fixed one real bug this way — a stale Design Lab description
   still describing the old ascending-bars mark.
+- Commits were pushed directly to `master` (matching this repo's existing
+  no-PR workflow), then independently reviewed via a GitHub PR
+  (`Cubensis91/transcriptioneer#1`) opened against a throwaway
+  `pre-milestone-2.5` baseline branch purely so the diff was reviewable.
+  The review (8 parallel finder agents + direct verification) surfaced 8
+  findings; the 4 real regressions were fixed in a follow-up commit
+  (dropped Markdown support in `IntakeThreshold`/`UploadDropzone`,
+  `IntakeThreshold` missing its `state` prop so `ScribeMark` could never
+  reach its active/pulsing state on the live homepage, and `ProcessStepper`'s
+  `kind` hardcoded to `"audio"` instead of derived from the mock document).
+  PR #1 was then **closed without merging** — nothing to integrate, since
+  `master` already had every commit — and `pre-milestone-2.5` was deleted.
 
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
