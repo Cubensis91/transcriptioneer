@@ -100,14 +100,34 @@ real design tooling for contrast/accessibility, not copied verbatim:
 | Accent / signal blue (primary action) | `~#2884E8` | Primary buttons ("View knowledge"), send action, links |
 | Character glow (eyes, headphone accents) | Icy white-blue | Scribe's eyes/details across all states — the one recurring "alive" accent |
 
-Reasoning: the *hero* stays cosmic/mysterious (deep sky, stars, the scribe
-working alone in vast space — reinforcing "a memory of what matters to you"
-as something vast and worth safeguarding), while the *product surface* itself
-is calm, near-white, and legible — closer to "pages on a desk lit by that
-same sky" than a dark dashboard. The warm horizon band in the hero gradient
-is the one remaining warmth cue and should not be lost when this is
-formalized into tokens — it's the visual bridge between the cosmic hero and
-the human, tactile product surface.
+Reasoning (superseded below): the *hero* stays cosmic/mysterious (deep sky,
+stars, the scribe working alone in vast space — reinforcing "a memory of what
+matters to you" as something vast and worth safeguarding), while the
+*product surface* itself is calm, near-white, and legible — closer to "pages
+on a desk lit by that same sky" than a dark dashboard. The warm horizon band
+in the hero gradient is the one remaining warmth cue and should not be lost
+when this is formalized into tokens — it's the visual bridge between the
+cosmic hero and the human, tactile product surface.
+
+#### 2.1.1 Founder decision (2026-07-29): cosmic is the product-wide default
+
+`MILESTONE_2.5_VISUAL_REFINEMENT.md` flagged that the paragraph above (hero
+cosmic, product surface near-white) disagreed with every reference mockup,
+which render the *entire* screen — sidebar, panels, cards included — in the
+dark cosmic palette, not just a hero band. The founder has now resolved this
+explicitly: **the cosmic/dark palette is the default product surface,
+product-wide, not hero-scoped.** The near-white palette (this section's
+`:root`/`.light` tokens in `packages/ui/src/tokens.css`) remains available as
+an explicit, user-selectable light mode — it is no longer the default a new
+visitor sees.
+
+Additionally, the cosmic palette as implemented is tuned **~10% brighter**
+than the raw reference-mockup values above (via `color-mix(in srgb, <value>
+90%, white 10%)` on `--color-bg`, `--color-surface`, `--color-surface-raised`,
+`--surface-gradient-raised`/`-pressed`, and `--hero-gradient-cosmic` in
+`tokens.css`'s `.dark` block) — deliberately never pure white, but not as
+murky as the source art either. `next-themes`' `defaultTheme` is `"dark"`
+(see `apps/web/src/components/theme-provider.tsx`).
 
 ## 3. The signature intake experience
 

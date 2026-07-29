@@ -244,9 +244,16 @@
    Applied via the `.dark` class next-themes toggles on <html>, and mirrored
    under prefers-color-scheme for no-JS/pre-hydration graceful degradation. */
 .dark {
-  --color-bg: var(--neutral-950);
-  --color-surface: var(--neutral-900);
-  --color-surface-raised: var(--neutral-800);
+  /* Founder decision, 2026-07-29 (resolves MILESTONE_2.5_VISUAL_REFINEMENT.md
+     item 3's open question): the cosmic/dark palette is the product's
+     *default* surface — not hero-only — per every reference mockup, tuned
+     ~10% brighter than the raw reference art so it reads as alive rather
+     than murky. Encoded as color-mix() against the un-mixed neutral/gradient
+     values below so the "how much brighter" knob stays in one place. See
+     VISUAL_IDENTITY.md §2.1. */
+  --color-bg: color-mix(in srgb, var(--neutral-950) 90%, white 10%);
+  --color-surface: color-mix(in srgb, var(--neutral-900) 90%, white 10%);
+  --color-surface-raised: color-mix(in srgb, var(--neutral-800) 90%, white 10%);
   --color-border: var(--neutral-800);
   --color-border-strong: var(--neutral-700);
   --color-text: var(--neutral-50);
@@ -296,8 +303,20 @@
   --shadow-md: 0 4px 16px rgb(var(--shadow-color) / 0.4), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
   --shadow-lg: 0 16px 40px rgb(var(--shadow-color) / 0.5), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
 
-  --surface-gradient-raised: linear-gradient(180deg, var(--neutral-800) 0%, var(--neutral-900) 100%);
-  --surface-gradient-pressed: linear-gradient(180deg, var(--neutral-950) 0%, var(--neutral-800) 100%);
+  /* Same +10% brightening as --color-surface/--color-surface-raised above —
+     these gradients are what's actually painted on Card/panel surfaces (the
+     flat --color-surface only shows through where no image is layered), so
+     they need the same treatment or the brightening wouldn't be visible. */
+  --surface-gradient-raised: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neutral-800) 90%, white 10%) 0%,
+    color-mix(in srgb, var(--neutral-900) 90%, white 10%) 100%
+  );
+  --surface-gradient-pressed: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--neutral-950) 90%, white 10%) 0%,
+    color-mix(in srgb, var(--neutral-800) 90%, white 10%) 100%
+  );
   --surface-gradient-accent: linear-gradient(180deg, var(--accent-500) 0%, var(--accent-600) 100%);
 
   --ring-inset: rgb(255 255 255 / 0.1);
@@ -307,16 +326,24 @@
   --chrome-dot-amber: #f5bd4f;
   --chrome-dot-green: #61c454;
 
-  --hero-gradient-cosmic: linear-gradient(165deg, #060d19 0%, #0c2540 35%, #134a86 68%, #1671d4 100%);
+  --hero-gradient-cosmic: linear-gradient(
+    165deg,
+    color-mix(in srgb, #060d19 90%, white 10%) 0%,
+    color-mix(in srgb, #0c2540 90%, white 10%) 35%,
+    color-mix(in srgb, #134a86 90%, white 10%) 68%,
+    color-mix(in srgb, #1671d4 90%, white 10%) 100%
+  );
 
   --texture-grain-opacity: 0.03;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not(.light) {
-    --color-bg: var(--neutral-950);
-    --color-surface: var(--neutral-900);
-    --color-surface-raised: var(--neutral-800);
+    /* Kept in sync with .dark above — see its comment for the founder
+       decision this encodes. */
+    --color-bg: color-mix(in srgb, var(--neutral-950) 90%, white 10%);
+    --color-surface: color-mix(in srgb, var(--neutral-900) 90%, white 10%);
+    --color-surface-raised: color-mix(in srgb, var(--neutral-800) 90%, white 10%);
     --color-border: var(--neutral-800);
     --color-border-strong: var(--neutral-700);
     --color-text: var(--neutral-50);
@@ -349,15 +376,29 @@
     --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.3), inset 0 1px 0 0 var(--bevel-highlight), inset 0 -1px 0 0 var(--bevel-lowlight);
     --shadow-md: 0 4px 16px rgb(var(--shadow-color) / 0.4), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
     --shadow-lg: 0 16px 40px rgb(var(--shadow-color) / 0.5), inset 0 1px 0 0 var(--bevel-highlight-strong), inset 0 -1px 1px 0 var(--bevel-lowlight);
-    --surface-gradient-raised: linear-gradient(180deg, var(--neutral-800) 0%, var(--neutral-900) 100%);
-    --surface-gradient-pressed: linear-gradient(180deg, var(--neutral-950) 0%, var(--neutral-800) 100%);
+    --surface-gradient-raised: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--neutral-800) 90%, white 10%) 0%,
+      color-mix(in srgb, var(--neutral-900) 90%, white 10%) 100%
+    );
+    --surface-gradient-pressed: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--neutral-950) 90%, white 10%) 0%,
+      color-mix(in srgb, var(--neutral-800) 90%, white 10%) 100%
+    );
     --surface-gradient-accent: linear-gradient(180deg, var(--accent-500) 0%, var(--accent-600) 100%);
     --ring-inset: rgb(255 255 255 / 0.1);
     --ring-inset-strong: rgb(0 0 0 / 0.45);
     --chrome-dot-red: #ec6a5e;
     --chrome-dot-amber: #f5bd4f;
     --chrome-dot-green: #61c454;
-    --hero-gradient-cosmic: linear-gradient(165deg, #060d19 0%, #0c2540 35%, #134a86 68%, #1671d4 100%);
+    --hero-gradient-cosmic: linear-gradient(
+      165deg,
+      color-mix(in srgb, #060d19 90%, white 10%) 0%,
+      color-mix(in srgb, #0c2540 90%, white 10%) 35%,
+      color-mix(in srgb, #134a86 90%, white 10%) 68%,
+      color-mix(in srgb, #1671d4 90%, white 10%) 100%
+    );
     --texture-grain-opacity: 0.03;
   }
 }

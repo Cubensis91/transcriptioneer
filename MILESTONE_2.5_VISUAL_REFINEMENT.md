@@ -1,7 +1,8 @@
 # Milestone 2.5 — Visual/Product Refinement
 
-Status: **proposed, awaiting founder sign-off.** No code has been written
-against this scope yet. This milestone exists because a visual/product gap
+Status: **in progress** (founder sign-off received 2026-07-29, including the
+open question below and a scope addition — see "Addendum" at the bottom).
+This milestone exists because a visual/product gap
 analysis (live `/` and `/design-lab` screenshots, compared against
 `VISUAL_IDENTITY.md`, `PRODUCT_PHILOSOPHY.md`, and the reference art in
 `references/` + the root-level mockup PNGs) found the implementation
@@ -61,10 +62,10 @@ tokens, and swapping/relocating existing components.
 
 ## Explicitly out of scope
 
-- Anything behind the `(dashboard)` route wiring becoming a real, committed
-  screen — this milestone touches the *components*, not the decision to
-  ship a real dashboard route (that's still gated behind Milestone 3 per
-  `PROJECT_STATUS.md`'s "Deferred work" section).
+- ~~Anything behind the `(dashboard)` route wiring becoming a real, committed
+  screen~~ — **superseded by the founder directive dated 2026-07-29, see
+  "Addendum" at the bottom of this document.** The homepage is now in scope
+  and being committed as part of this milestone.
 - New illustration/character art beyond what `ScribeMark` already has
   (idle/active silhouette) — a richer, more detailed scribe illustration
   (matching the reference art's linework) is a future decision, not this
@@ -78,16 +79,18 @@ tokens, and swapping/relocating existing components.
 - Any backend, auth, or `packages/database` schema work (Milestone 3+,
   unaffected by this milestone).
 
-## Open question (needs founder decision before item 3 can be implemented)
+## Open question — RESOLVED 2026-07-29
 
-`VISUAL_IDENTITY.md` §2.1's text says the *product surface* (post-hero) is
+`VISUAL_IDENTITY.md` §2.1's text said the *product surface* (post-hero) is
 "calm, near-white, and legible... closer to pages on a desk," with cosmic
 dark reserved for the hero/intake. But every reference mockup — including
 ones explicitly labeled as the app's home/dashboard, not just a landing
 hero — renders the *entire* screen in the dark cosmic palette, every panel
-included. These two sources currently disagree. Implementation should not
-guess; this needs an explicit founder call: is near-white-by-default (spec
-text) or cosmic-by-default (reference art) the actual target?
+included. These two sources disagreed; implementation did not guess.
+
+**Founder decision:** cosmic-by-default, product-wide, tuned ~10% brighter
+than the raw reference art. See `VISUAL_IDENTITY.md` §2.1.1 for the full
+rationale and the token-level implementation. Item 3 below is unblocked.
 
 ## Acceptance criteria
 
@@ -117,6 +120,17 @@ text) or cosmic-by-default (reference art) the actual target?
 
 ### Deferred (decision-blocked, not code-blocked)
 
-- Item 3 (light/dark/cosmic default) cannot start until the open question
-  above is answered — implementing either direction without that answer
-  risks redoing the work.
+- ~~Item 3 (light/dark/cosmic default) cannot start until the open question
+  above is answered~~ — resolved, see above.
+
+## Addendum (2026-07-29): homepage shipped as part of this milestone
+
+A same-day founder directive expanded this milestone's scope beyond the
+original "components only, no committed route" boundary: the `(dashboard)`
+route is now built and committed as the real homepage/entrance experience
+(scribe + `IntakeThreshold` hero, sidebar, process stepper, recent-documents
+grid, quick insights), reusing the same already-built, mock-data-driven
+components `/design-lab` already showcases. This still does **not** add any
+backend, auth, or database work — the homepage renders against
+`lib/mock-data.ts` exactly like `/design-lab` does, with no real upload
+processing behind it. Auth/backend remain Milestone 3+.
