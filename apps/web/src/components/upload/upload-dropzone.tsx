@@ -36,7 +36,7 @@ export function UploadDropzone() {
           Bring me audio or documents
         </p>
         <p className="text-sm text-text-muted">
-          MP3, WAV, M4A, MP4, PDF, DOCX, TXT, or images — up to 25 files at once.
+          MP3, WAV, M4A, AAC, MP4, PDF, DOCX, TXT, Markdown, or images — up to 25 files at once.
         </p>
       </div>
       <Button variant="secondary" size="sm" type="button">

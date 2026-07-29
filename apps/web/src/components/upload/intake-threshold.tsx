@@ -9,7 +9,7 @@ import { ScribeMark } from "@/components/scribe-mark";
 import type { MockDocument } from "@/lib/mock-data";
 import { FileTypeIndicator } from "./file-type-indicator";
 
-const SUPPORTED_KINDS: MockDocument["kind"][] = ["audio", "video", "pdf", "docx", "txt", "image"];
+const SUPPORTED_KINDS: MockDocument["kind"][] = ["audio", "video", "pdf", "docx", "txt", "md", "image"];
 
 // Fixed positions/delays (not random) so server and client render the same
 // markup — Math.random() here would be a hydration mismatch.

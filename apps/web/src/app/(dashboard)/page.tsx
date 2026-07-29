@@ -81,7 +81,11 @@ export default function Home() {
         </header>
 
         <main className="flex flex-1 flex-col gap-8 overflow-y-auto px-4 pb-24 sm:px-8 lg:pb-8">
-          <IntakeThreshold size="hero" className="mx-auto w-full max-w-3xl" />
+          <IntakeThreshold
+            size="hero"
+            state={processingStageToVisualState(inFlightDocument.stage)}
+            className="mx-auto w-full max-w-3xl"
+          />
 
           <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1fr_20rem]">
             <div className="flex flex-col gap-6">
@@ -90,7 +94,7 @@ export default function Home() {
                 <CardContent className="pt-5">
                   <ProcessStepper
                     currentState={processingStageToVisualState(inFlightDocument.stage)}
-                    kind="audio"
+                    kind={inFlightDocument.kind === "audio" ? "audio" : "document"}
                   />
                 </CardContent>
               </Card>
