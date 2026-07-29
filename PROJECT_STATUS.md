@@ -133,11 +133,21 @@ future unification decision.
 
 ## Known pending infrastructure verification
 
-**Docker is unavailable in this development environment.** `docker-compose.yml`
-(PostgreSQL + pgvector, Redis, MinIO) and the first Prisma migration are
-written and believed correct, but have **not** been run end-to-end against a
-live database in this session. This is the first thing to verify in a
-Docker-capable environment:
+**Docker is unavailable in this development environment — confirmed, not just
+assumed, during the Milestone 2.5 session (2026-07-29).** `docker.io` isn't
+installed by default; installing it and starting `dockerd` directly (no
+systemd managing it as a service here) fails at network-controller init every
+time: `iptables --wait -t nat -N DOCKER: Permission denied`, and retrying with
+`--iptables=false` gets further before hitting `list bridge addresses failed:
+Wrong sender portid ..., expected 0` — a netlink error characteristic of this
+PRoot sandbox not emulating the netfilter/netlink syscalls Docker's bridge
+networking needs. Same category of limitation as the Turbopack "Invalid
+symlink" issue noted elsewhere in this document — not fixable from inside the
+sandbox or by editing `docker-compose.yml`. `docker-compose.yml` (PostgreSQL +
+pgvector, Redis, MinIO) and the first Prisma migration are written and
+believed correct, but remain **unverified end-to-end against a live
+database** — this needs a real Docker-capable machine (actual dev environment
+or CI), not this sandbox. This is the first thing to verify there:
 
 ```bash
 docker compose up -d
