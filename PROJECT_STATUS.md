@@ -14,10 +14,11 @@ MILESTONE 3 — NOT STARTED
 Development is deliberately paused here, at the end of Milestone 2, per
 explicit instruction. No code beyond Milestone 2 scope exists in this repo.
 
-**As of this point, [`PRODUCT_PHILOSOPHY.md`](./PRODUCT_PHILOSOPHY.md) is the
-authoritative source for Transcriptioneer's human/product philosophy.**
-Milestone 3 and every milestone after it must be evaluated against it, not
-just against technical completeness.
+**As of this point, [`PRODUCT_PHILOSOPHY.md`](./PRODUCT_PHILOSOPHY.md) and
+[`VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) are the authoritative sources for
+Transcriptioneer's human/product philosophy and character/aesthetic,
+respectively.** Milestone 3 and every milestone after it must be evaluated
+against both, not just against technical completeness.
 
 ## Completed milestones
 
@@ -30,7 +31,7 @@ just against technical completeness.
 - `apps/mobile` is an intentional placeholder (README only) — real app starts Milestone 12.
 
 ### Milestone 2 — Design system
-- Full design token system (`packages/ui/src/tokens.css`): warm-ink neutral scale, muted-teal "signal" accent, 4 semantic hues (success/warning/error/info), role tokens (`--color-bg`, `--color-surface`, `--color-text`, ...) that light and dark mode map to *different* scale steps — not inverted values.
+- Full design token system (`packages/ui/src/tokens.css`): warm-ink neutral scale, "signal" accent scale, 4 semantic hues (success/warning/error/info), role tokens (`--color-bg`, `--color-surface`, `--color-text`, ...) that light and dark mode map to *different* scale steps — not inverted values. (The accent scale originally shipped as a muted teal; it was re-derived to a blue matching `VISUAL_IDENTITY.md` §2.1's `#2884E8` signal-blue spec once that document entered scope — see the token file's own comment for the accessibility rationale.)
 - ~30 reusable components in `packages/ui` (Radix UI primitives + `class-variance-authority`, `cmdk` command palette): Button, Input/Textarea/Select/Checkbox/RadioGroup/Switch/FormField, Card, Badge, Avatar, Tooltip, Dialog, AlertDialog, DropdownMenu, ContextMenu, Tabs, Toast/Toaster, Alert, Skeleton, Progress, Spinner, Separator, Breadcrumbs, EmptyState, Command palette, ThemeToggleButton.
 - Product-specific components in `apps/web/src/components`: navigation (sidebar, mobile nav, top nav, search interface), document/audio/task/decision/person/topic/AI-insight cards, AI result renderers, file-processing-state badges/rows, upload dropzone/queue.
 - `/design-lab` route: all 13 required sections (Brand, Typography, Buttons, Form elements, Cards, File states, AI results, Navigation, Feedback, Modals & overlays, Upload experience, Responsive, Light & dark), mock data only, `robots: noindex`.

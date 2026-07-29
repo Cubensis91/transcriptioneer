@@ -9,7 +9,9 @@ helping people understand, organize, connect, and remember what they entrust
 to it. [`PRODUCT_PHILOSOPHY.md`](./PRODUCT_PHILOSOPHY.md) is the authoritative
 source for this human experience and product philosophy; every feature, UX
 decision, and piece of AI/product copy from Milestone 3 onward is evaluated
-against it.
+against it. [`VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) is the authoritative
+source for the brand character, aesthetic direction, and the narrative shape
+of the signature intake interface.
 
 **Status: Milestone 2 — design system.** No authentication, uploads,
 transcription, AI analysis, or document processing yet. What exists: the
