@@ -34,16 +34,25 @@ against both, not just against technical completeness.
 - Full design token system (`packages/ui/src/tokens.css`): warm-ink neutral scale, "signal" accent scale, 4 semantic hues (success/warning/error/info), role tokens (`--color-bg`, `--color-surface`, `--color-text`, ...) that light and dark mode map to *different* scale steps — not inverted values. (The accent scale originally shipped as a muted teal; it was re-derived to a blue matching `VISUAL_IDENTITY.md` §2.1's `#2884E8` signal-blue spec once that document entered scope — see the token file's own comment for the accessibility rationale.)
 - ~30 reusable components in `packages/ui` (Radix UI primitives + `class-variance-authority`, `cmdk` command palette): Button, Input/Textarea/Select/Checkbox/RadioGroup/Switch/FormField, Card, Badge, Avatar, Tooltip, Dialog, AlertDialog, DropdownMenu, ContextMenu, Tabs, Toast/Toaster, Alert, Skeleton, Progress, Spinner, Separator, Breadcrumbs, EmptyState, Command palette, ThemeToggleButton.
 - Product-specific components in `apps/web/src/components`: navigation (sidebar, mobile nav, top nav, search interface), document/audio/task/decision/person/topic/AI-insight cards, AI result renderers, file-processing-state badges/rows, upload dropzone/queue.
+- Tactile/skeuomorphic pass per `VISUAL_IDENTITY.md` §2.2 (mandatory skeuomorphism directive, founder 2026-07-29): bevel/surface-gradient/inset-ring/chrome-dot tokens added to `tokens.css`, plus new components `PanelChromeHeader` (decorative macOS-style window chrome), `ScribeMark` (placeholder hooded-scribe character, non-mascot), `IntakeThreshold`, `ProcessStepper`, and `QuickInsightsPanel` — all showcased in `/design-lab` with mock data only, same scope as the rest of Milestone 2.
 - `/design-lab` route: all 13 required sections (Brand, Typography, Buttons, Form elements, Cards, File states, AI results, Navigation, Feedback, Modals & overlays, Upload experience, Responsive, Light & dark), mock data only, `robots: noindex`.
 - Light/dark mode via `next-themes`, visually verified live in a real browser (Chrome via automation): both themes, and every interactive component (Dialog, AlertDialog, Command palette, Toast, theme toggle).
 - Two real bugs found and fixed during verification (not just cosmetic — see `ARCHITECTURE.md` §13–14 for full detail):
   1. `Button`'s `asChild` (Radix `Slot`) broke when a hidden loading-spinner slot was rendered alongside a single child.
   2. `packages/ui` had to be switched from CommonJS to ESM output — TypeScript's forced `"use strict"` prologue was shadowing `"use client"` directives, silently breaking every client component in the package under Next.js's static generation.
 
+### Repo history note
+`main` (origin) and `master` (this branch) are unrelated git histories — `main`
+holds no application code, only docs/planning, and was left untouched.
+`VISUAL_IDENTITY.md`, including the founder's 2026-07-29 mandatory-skeuomorphism
+directive, was reconciled onto `master` from `main`'s stash; nothing else from
+`main` was merged in.
+
 ## Fully implemented
 
 - Monorepo tooling: install, build, typecheck, lint, test, dev — all verified green (`pnpm turbo run build typecheck lint test`, 32/32 tasks, reproduced from a clean cache).
 - Web app boots, API boots, `/health` endpoint, design token system, component library, Design Lab route.
+- `packageManager` pin corrected to `pnpm@9.15.9` (matches `pnpm-lock.yaml`'s `lockfileVersion: '9.0'` and the Node 20 pinned by `.nvmrc`/README) — it was previously pinned to `pnpm@11.17.0`, which requires Node ≥22.13 and fails immediately under corepack on Node 20.
 
 ## Intentionally not implemented yet
 
@@ -53,9 +62,19 @@ against both, not just against technical completeness.
 - AI analysis / OpenAI integration (Milestone 5/6)
 - Document processing (Milestone 7)
 - Knowledge library, semantic search, AI chat (Milestones 8–10)
-- Real product screens (dashboard, upload flow, document viewer) — only the Design Lab exists as a UI surface so far
+- Real product screens (dashboard, upload flow, document viewer) — the new Milestone 2 components above are only wired into `/design-lab` so far. A real `(dashboard)` route exists in the working tree but is **deliberately uncommitted**, held back until Milestone 3 (auth) lands — see "Deferred work" below.
 - Mobile app (Milestone 12+)
 - The full knowledge-graph Prisma schema (`packages/database` still has only the placeholder `HealthCheck` model)
+
+## Deferred work (uncommitted in the working tree, on purpose)
+
+`apps/web/src/app/(dashboard)/page.tsx`, `layout.tsx`, `page.test.tsx`, and the
+`nav-items.ts` change pointing "Dashboard" at `/` wire the new Milestone 2
+components into a real, navigable home screen. That crosses the "real product
+screens" line this document reserves for post-auth milestones, and
+`ARCHITECTURE.md` §12 expects each milestone committed before the next begins.
+These files are left as-is in the working tree — nothing discarded — to be
+committed once Milestone 3 actually lands, not before.
 
 ## Known pending infrastructure verification
 
