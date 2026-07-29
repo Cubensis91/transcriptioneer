@@ -6,13 +6,21 @@ intelligence, semantic search, and chat over your own knowledge base).
 ## Current status
 
 ```
-MILESTONE 1 — COMPLETE
-MILESTONE 2 — COMPLETE
-MILESTONE 3 — NOT STARTED
+MILESTONE 0 — ARCHITECTURE / PRODUCT PHILOSOPHY — COMPLETE
+MILESTONE 1 — PROJECT FOUNDATION — COMPLETE
+MILESTONE 2 — DESIGN SYSTEM + DESIGN LAB — COMPLETE
+MILESTONE 2.5 — VISUAL/PRODUCT REFINEMENT — PROPOSED, NOT STARTED
+MILESTONE 3 — AUTHENTICATION — NOT STARTED
 ```
 
 Development is deliberately paused here, at the end of Milestone 2, per
 explicit instruction. No code beyond Milestone 2 scope exists in this repo.
+A visual/product gap analysis (comparing the live app and `/design-lab`
+against `VISUAL_IDENTITY.md` and the reference art) proposed a Milestone 2.5
+refinement — brand mark, scribe placement, light/dark-cosmic direction,
+tactile consistency — which is awaiting founder review before Milestone 3
+begins. `MILESTONE_3_AUTH.md` (scope proposal, also awaiting sign-off) exists
+in the repo but no Milestone 3 code has been written.
 
 **As of this point, [`PRODUCT_PHILOSOPHY.md`](./PRODUCT_PHILOSOPHY.md) and
 [`VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) are the authoritative sources for
@@ -109,7 +117,8 @@ curl http://localhost:4000/health   # expect "status":"ok", not "degraded"
 ## Next milestone
 
 ```
-MILESTONE 3 — AUTHENTICATION
+MILESTONE 2.5 — VISUAL/PRODUCT REFINEMENT (proposed, awaiting founder review)
+MILESTONE 3 — AUTHENTICATION (not started, not next until 2.5 is resolved)
 ```
 
 Per the product roadmap (`ARCHITECTURE.md` §12): secure email/password
