@@ -11,13 +11,16 @@ source for this human experience and product philosophy; every feature, UX
 decision, and piece of AI/product copy from Milestone 3 onward is evaluated
 against it. [`VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) is the authoritative
 source for the brand character, aesthetic direction, and the narrative shape
-of the signature intake interface.
+of the signature intake interface. [`MILESTONES_ORIGINAL.md`](./MILESTONES_ORIGINAL.md)
+is the founder's original narrative roadmap (Milestones 0–12) behind the
+technical roadmap in `ARCHITECTURE.md` §12.
 
-**Status: Milestone 2 — design system.** No authentication, uploads,
-transcription, AI analysis, or document processing yet. What exists: the
-monorepo foundation (Milestone 1), plus a full design token system, a
-reusable component library, and a `/design-lab` route showcasing every
-component and state with mock data.
+**Status: Milestone 3 — authentication, in progress.** Schema only so far
+(User/Organization/OrganizationMember/RefreshToken); no live migration, no
+API/web auth flows yet. What exists: the monorepo foundation (Milestone 1),
+a full design token system and reusable component library (Milestone 2), and
+a real committed homepage. See `PROJECT_STATUS.md` for the current
+milestone-by-milestone breakdown.
 
 ## Stack
 

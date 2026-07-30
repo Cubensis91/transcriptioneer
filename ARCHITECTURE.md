@@ -165,6 +165,12 @@ semantic search → chat → web polish → mobile foundation/core/voice/polish 
 production readiness → release prep). Each milestone: implemented, tested,
 type-checked, linted, built, and committed before the next begins.
 
+This 17-milestone breakdown is the execution-level plan. The original,
+narrative form of the same roadmap — the founder's Milestones 0–12,
+including the product philosophy behind each one and how the vision evolved
+(the scribe, the door, "Transcriptioneer no almacena archivos; cultiva
+memoria") — is preserved in [`MILESTONES_ORIGINAL.md`](./MILESTONES_ORIGINAL.md).
+
 ## 13. Implementation notes (Milestone 1)
 
 Where the actual foundation diverged from this proposal, and why:

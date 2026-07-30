@@ -1,7 +1,9 @@
 # Project Status
 
 **Project**: Transcriptioneer — AI knowledge organizer (transcription, document
-intelligence, semantic search, and chat over your own knowledge base).
+intelligence, semantic search, and chat over your own knowledge base). See
+[`MILESTONES_ORIGINAL.md`](./MILESTONES_ORIGINAL.md) for the founder's
+original narrative roadmap (Milestones 0–12) behind this technical tracker.
 
 ## Current status
 
