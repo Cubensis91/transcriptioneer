@@ -10,7 +10,7 @@ MILESTONE 0 — ARCHITECTURE / PRODUCT PHILOSOPHY — COMPLETE
 MILESTONE 1 — PROJECT FOUNDATION — COMPLETE
 MILESTONE 2 — DESIGN SYSTEM + DESIGN LAB — COMPLETE
 MILESTONE 2.5 — VISUAL/PRODUCT REFINEMENT — COMPLETE (2026-07-29)
-MILESTONE 3 — AUTHENTICATION — NOT STARTED
+MILESTONE 3 — AUTHENTICATION — IN PROGRESS (started 2026-07-29): schema only
 ```
 
 Milestone 2.5 is done: the founder resolved its one open question
@@ -20,8 +20,18 @@ and, same day, expanded its scope to include shipping the real homepage
 "Addendum"). The `(dashboard)` route is now committed: a scribe-and-threshold
 hero, sidebar/mobile nav, process tracker, recent-documents grid, and quick
 insights, all driven by the same mock data `/design-lab` already used — no
-backend or auth wiring added. `MILESTONE_3_AUTH.md` (scope proposal, awaiting
-sign-off) exists in the repo but no Milestone 3 code has been written.
+backend or auth wiring added.
+
+Milestone 3 has since started, same day: commit `f9a3c55` ("Milestone 3: real
+Prisma schema") replaced the `HealthCheck` placeholder with the real
+`User`/`Organization`/`OrganizationMember`/`RefreshToken` models and a
+generated migration (see "Milestone 3 — Authentication (in progress)" below).
+That is item 1 of `MILESTONE_3_AUTH.md`'s 11-item scope — the API auth module
+(register/login/refresh/logout), password hashing, guards, rate limiting, and
+the web login/register screens are **not** written yet. The working tree also
+has uncommitted scaffolding ahead of that commit: `packages/types` and
+`packages/validation` gained `User`/`Organization`/`AuthSession` types and
+`registerSchema`/`loginSchema` Zod schemas, not yet committed.
 
 **As of this point, [`PRODUCT_PHILOSOPHY.md`](./PRODUCT_PHILOSOPHY.md) and
 [`VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) are the authoritative sources for
@@ -83,6 +93,26 @@ against both, not just against technical completeness.
   PR #1 was then **closed without merging** — nothing to integrate, since
   `master` already had every commit — and `pre-milestone-2.5` was deleted.
 
+### Milestone 3 — Authentication (in progress, started 2026-07-29)
+- Prisma schema (`packages/database/prisma/schema.prisma`) replaces the
+  Milestone 1 `HealthCheck` placeholder with `User`, `Organization`,
+  `OrganizationMember` (role enum `OWNER`/`ADMIN`/`MEMBER`, multi-tenant from
+  day one per `ARCHITECTURE.md` §7), and `RefreshToken` (hashed storage,
+  rotation-with-reuse-detection via `replacedByTokenId`). Migration SQL
+  (`20260729231129_init_auth`) was generated offline via `prisma migrate diff
+  --from-empty --to-schema-datamodel` (no live Postgres in this sandbox —
+  same Docker constraint noted below) — `db:generate` succeeds and `apps/api`
+  still typechecks clean, but the migration has **not** been applied against
+  a live database yet. `prisma migrate deploy` is still owed once Docker is
+  available.
+- Nothing else in `MILESTONE_3_AUTH.md`'s scope exists yet: `apps/api/src`
+  still only has `health/` and `config/` — no auth module, controller,
+  guard, Argon2 hashing, JWT/refresh-token issuance, or
+  `@nestjs/throttler` rate limiting. No web login/register screens.
+  `packages/types`/`packages/validation` have uncommitted auth-shape
+  scaffolding (see above) but nothing consumes it yet.
+- Estimated completion: ~10–15% of the milestone's 11-item scope.
+
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
 `VISUAL_IDENTITY.md`, including the founder's 2026-07-29 mandatory-skeuomorphism
@@ -109,7 +139,7 @@ future unification decision.
 
 ## Intentionally not implemented yet
 
-- Authentication (Milestone 3)
+- Authentication (Milestone 3) — in progress, schema only; see above
 - File uploads (Milestone 4)
 - Audio transcription (Milestone 5)
 - AI analysis / OpenAI integration (Milestone 5/6)
@@ -117,7 +147,7 @@ future unification decision.
 - Knowledge library, semantic search, AI chat (Milestones 8–10)
 - Real product screens beyond the homepage (library, document viewer, chat, settings) — the homepage/entrance now exists and is committed (Milestone 2.5), but the rest of `nav-items.ts`'s destinations (Library, Chat, Tasks, Settings) are still placeholder `href="#"` links with no routes behind them yet.
 - Mobile app (Milestone 12+)
-- The full knowledge-graph Prisma schema (`packages/database` still has only the placeholder `HealthCheck` model)
+- The rest of the knowledge-graph Prisma schema beyond auth (`SourceFile`, `ProcessingJob`, `Transcript`, `Document`, `KnowledgeItem`, `Chunk`, `Conversation`, `Message`, etc.) — Milestone 4+, once a feature needs each entity. The `HealthCheck` placeholder itself is already gone, replaced by the auth models (see Milestone 3 above).
 
 ## Follow-ups noted but not done in Milestone 2.5
 
@@ -133,21 +163,25 @@ future unification decision.
 
 ## Known pending infrastructure verification
 
-**Docker is unavailable in this development environment — confirmed, not just
-assumed, during the Milestone 2.5 session (2026-07-29).** `docker.io` isn't
-installed by default; installing it and starting `dockerd` directly (no
-systemd managing it as a service here) fails at network-controller init every
-time: `iptables --wait -t nat -N DOCKER: Permission denied`, and retrying with
-`--iptables=false` gets further before hitting `list bridge addresses failed:
-Wrong sender portid ..., expected 0` — a netlink error characteristic of this
-PRoot sandbox not emulating the netfilter/netlink syscalls Docker's bridge
-networking needs. Same category of limitation as the Turbopack "Invalid
-symlink" issue noted elsewhere in this document — not fixable from inside the
-sandbox or by editing `docker-compose.yml`. `docker-compose.yml` (PostgreSQL +
-pgvector, Redis, MinIO) and the first Prisma migration are written and
-believed correct, but remain **unverified end-to-end against a live
-database** — this needs a real Docker-capable machine (actual dev environment
-or CI), not this sandbox. This is the first thing to verify there:
+**Docker is still not usable in this development environment**, though the
+specific symptom has changed since the Milestone 2.5 session (2026-07-29): at
+that time `docker.io` wasn't installed at all, and installing it manually hit
+a network-controller init failure (`iptables --wait -t nat -N DOCKER:
+Permission denied`, then `list bridge addresses failed: Wrong sender portid
+..., expected 0` with `--iptables=false` — a netlink error characteristic of
+this PRoot sandbox not emulating the netfilter/netlink syscalls Docker's
+bridge networking needs). As of the 2026-07-29 audit, the `docker` CLI (v29.1.3)
+is now present, but `docker ps`/`docker compose up -d` fail immediately with
+"Cannot connect to the Docker daemon at unix:///var/run/docker.sock" — the
+daemon isn't running, and starting it wasn't attempted during a read-only
+audit, so whether it would hit the same netlink limitation is untested. Net
+effect is the same as before: not fixable from inside the sandbox or by
+editing `docker-compose.yml`. `docker-compose.yml` (PostgreSQL + pgvector,
+Redis, MinIO) and the Milestone 1 and Milestone 3 (auth) Prisma migrations
+are written and believed correct, but remain **unverified end-to-end against
+a live database** — this needs a real Docker-capable machine (actual dev
+environment or CI), not this sandbox. This is the first thing to verify
+there:
 
 ```bash
 docker compose up -d
@@ -183,24 +217,30 @@ curl http://localhost:4000/health   # expect "status":"ok", not "degraded"
 ## Next milestone
 
 ```
-MILESTONE 3 — AUTHENTICATION (not started, next up now that 2.5 is complete)
+MILESTONE 3 — AUTHENTICATION (in progress — schema landed, API/web work remaining)
 ```
 
 Per the product roadmap (`ARCHITECTURE.md` §12): secure email/password
 authentication, protected routes, user sessions, OAuth-ready architecture
-(Google/Apple/Microsoft stubs). This is also where the real Prisma schema
-begins replacing the Milestone 1 `HealthCheck` placeholder — `User`,
-`Organization`, `OrganizationMember` are the natural first models, since
-every later entity (files, transcripts, knowledge items) is scoped to a user
-and/or organization.
+(Google/Apple/Microsoft stubs). The Prisma schema step (`User`, `Organization`,
+`OrganizationMember`, `RefreshToken`, replacing the Milestone 1 `HealthCheck`
+placeholder) is committed — see "Milestone 3 — Authentication (in progress)"
+above. Remaining: the NestJS auth module itself.
 
 ## Exact recommended first task when development resumes
 
 1. Confirm Docker is now available; run the pending infrastructure
-   verification above (migrate, generate, confirm `/health` reports `"ok"`).
+   verification above (migrate — this is the first real run of the
+   already-committed `20260729231129_init_auth` migration — generate,
+   confirm `/health` reports `"ok"`).
 2. Re-run `pnpm turbo run build typecheck lint test` to confirm the repo is
    still green after any environment changes since this session.
-3. Only then start Milestone 3: design the `User`/`Organization`/
-   `OrganizationMember` Prisma models, then the auth module in `apps/api`
-   (password hashing, JWT access + refresh tokens, guards), before touching
-   any web UI for login/register.
+3. Decide on the uncommitted `packages/types`/`packages/validation` auth
+   scaffolding in the working tree (commit it or fold it into the auth
+   module work below — it isn't consumed by anything yet).
+4. Continue Milestone 3 per `MILESTONE_3_AUTH.md`: the auth module in
+   `apps/api` (`/api/v1/auth` register/login/refresh/logout, Argon2id
+   password hashing, JWT access + rotating refresh tokens, guards with
+   org/user scoping, `@nestjs/throttler` rate limiting, and the tests listed
+   in that document's acceptance criteria), before touching any web UI for
+   login/register.
