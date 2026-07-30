@@ -25,13 +25,13 @@ backend or auth wiring added.
 Milestone 3 has since started, same day: commit `f9a3c55` ("Milestone 3: real
 Prisma schema") replaced the `HealthCheck` placeholder with the real
 `User`/`Organization`/`OrganizationMember`/`RefreshToken` models and a
-generated migration (see "Milestone 3 — Authentication (in progress)" below).
-That is item 1 of `MILESTONE_3_AUTH.md`'s 11-item scope — the API auth module
+generated migration, and `dbea1ae` ("Milestone 3: shared auth types and Zod
+schemas") added matching `packages/types`/`packages/validation` scaffolding
+(see "Milestone 3 — Authentication (in progress)" below). Together these are
+item 1 (schema) plus the type/validation halves of items 8–9 of
+`MILESTONE_3_AUTH.md`'s 11-item scope — the API auth module
 (register/login/refresh/logout), password hashing, guards, rate limiting, and
-the web login/register screens are **not** written yet. The working tree also
-has uncommitted scaffolding ahead of that commit: `packages/types` and
-`packages/validation` gained `User`/`Organization`/`AuthSession` types and
-`registerSchema`/`loginSchema` Zod schemas, not yet committed.
+the web login/register screens are **not** written yet.
 
 **As of this point, [`PRODUCT_PHILOSOPHY.md`](./PRODUCT_PHILOSOPHY.md) and
 [`VISUAL_IDENTITY.md`](./VISUAL_IDENTITY.md) are the authoritative sources for
@@ -105,12 +105,14 @@ against both, not just against technical completeness.
   still typechecks clean, but the migration has **not** been applied against
   a live database yet. `prisma migrate deploy` is still owed once Docker is
   available.
+- `packages/types` gained `OrgRole`/`User`/`Organization`/`AuthSession`/
+  `AuthenticatedUser`; `packages/validation` gained `registerSchema`/
+  `loginSchema` (commit `dbea1ae`) — both typecheck clean, but neither is
+  consumed anywhere yet.
 - Nothing else in `MILESTONE_3_AUTH.md`'s scope exists yet: `apps/api/src`
   still only has `health/` and `config/` — no auth module, controller,
   guard, Argon2 hashing, JWT/refresh-token issuance, or
   `@nestjs/throttler` rate limiting. No web login/register screens.
-  `packages/types`/`packages/validation` have uncommitted auth-shape
-  scaffolding (see above) but nothing consumes it yet.
 - Estimated completion: ~10–15% of the milestone's 11-item scope.
 
 ### Repo history note
@@ -235,10 +237,7 @@ above. Remaining: the NestJS auth module itself.
    confirm `/health` reports `"ok"`).
 2. Re-run `pnpm turbo run build typecheck lint test` to confirm the repo is
    still green after any environment changes since this session.
-3. Decide on the uncommitted `packages/types`/`packages/validation` auth
-   scaffolding in the working tree (commit it or fold it into the auth
-   module work below — it isn't consumed by anything yet).
-4. Continue Milestone 3 per `MILESTONE_3_AUTH.md`: the auth module in
+3. Continue Milestone 3 per `MILESTONE_3_AUTH.md`: the auth module in
    `apps/api` (`/api/v1/auth` register/login/refresh/logout, Argon2id
    password hashing, JWT access + rotating refresh tokens, guards with
    org/user scoping, `@nestjs/throttler` rate limiting, and the tests listed
