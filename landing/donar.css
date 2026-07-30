@@ -1,0 +1,192 @@
+/* ---------- Donation page ---------- */
+
+.donate-hero {
+  position: relative;
+  max-width: var(--container);
+  margin: 0 auto;
+  padding: 3.5rem 1.5rem 2rem;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+}
+.donate-hero__bg {
+  position: absolute;
+  inset: 0;
+  background-image: url("assets/textures.png");
+  background-size: 200% 200%;
+  background-position: 100% 0%;
+  opacity: 0.35;
+  border-radius: var(--radius-lg);
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 30%, black 40%, transparent 90%);
+}
+.donate-hero__inner {
+  position: relative;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.donate-hero__scribe {
+  width: 150px;
+  height: auto;
+  filter: drop-shadow(0 20px 40px rgba(59, 130, 246, 0.35));
+  animation: float-art 6s ease-in-out infinite;
+  margin-bottom: 0.5rem;
+}
+.donate-hero h1 {
+  font-size: clamp(1.6rem, 3.4vw, 2.3rem);
+  font-weight: 700;
+  line-height: 1.25;
+  margin-top: 0.75rem;
+}
+.donate-hero__lede {
+  margin-top: 1rem;
+  color: var(--text-muted);
+  font-size: 1rem;
+  max-width: 46ch;
+}
+
+.donate-widget {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem 5rem;
+}
+
+.donate-card {
+  background: linear-gradient(180deg, var(--surface), var(--surface-2));
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2rem;
+  text-align: center;
+  box-shadow: var(--shadow-soft);
+}
+
+.donate-card__amount-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.35rem;
+}
+.donate-card__currency {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+.donate-card__amount {
+  font-size: clamp(2.4rem, 8vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  transition: color 0.2s ease;
+  font-variant-numeric: tabular-nums;
+}
+.donate-card__currency-code {
+  font-size: 1rem;
+  color: var(--text-faint);
+  align-self: flex-end;
+  margin-bottom: 0.5rem;
+}
+.donate-card__tier-name {
+  margin-top: 0.35rem;
+  color: var(--accent-2);
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.slider {
+  width: 100%;
+  margin-top: 2rem;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  outline: none;
+  cursor: pointer;
+}
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: white;
+  border: 4px solid var(--accent);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.5);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.slider::-webkit-slider-thumb:hover { transform: scale(1.12); }
+.slider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: white;
+  border: 4px solid var(--accent);
+  box-shadow: 0 4px 14px rgba(59, 130, 246, 0.5);
+  cursor: pointer;
+}
+.slider__ticks {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.6rem;
+  font-size: 0.68rem;
+  color: var(--text-faint);
+}
+
+.donate-card__chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem;
+  margin-top: 1.75rem;
+}
+.chip {
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.5rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.chip:hover { border-color: var(--border-strong); color: var(--text); }
+.chip.is-active {
+  background: var(--accent-soft);
+  border-color: var(--accent-2);
+  color: var(--accent-2);
+}
+
+.donate-card__cta { margin-top: 2rem; font-size: 1.05rem; padding: 1rem; }
+.donate-card__note { margin-top: 0.9rem; font-size: 0.75rem; color: var(--text-faint); }
+
+.pay-methods { margin-top: 2rem; text-align: center; }
+.pay-methods__label { font-size: 0.78rem; color: var(--text-faint); margin-bottom: 0.9rem; }
+.pay-methods__row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+.pay-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+}
+.pay-badge--mp { color: #4c9aff; }
+.pay-badge--webpay { color: #34d399; }
+
+@media (max-width: 560px) {
+  .donate-card { padding: 1.75rem 1.25rem; }
+  .slider__ticks span:nth-child(2n) { visibility: hidden; }
+}

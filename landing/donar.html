@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Donar — Transcriptioneer</title>
+<meta name="description" content="Elige cuánto quieres aportar a Transcriptioneer." />
+<link rel="stylesheet" href="styles.css" />
+<link rel="stylesheet" href="donar.css" />
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav__inner">
+    <a class="brand" href="index.html">
+      <svg class="brand__mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="1" y="1" width="38" height="38" rx="10" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M13 27V17a7 7 0 0 1 14 0v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M10 27h20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>TRANSCRIPTIONEER</span>
+    </a>
+    <nav class="nav__links" aria-label="Principal">
+      <a href="index.html">Inicio</a>
+      <a href="index.html#why">Por qué importa</a>
+      <a href="index.html#product">Producto</a>
+      <a href="index.html#rewards">Recompensas</a>
+      <a href="index.html#roadmap">Hoja de ruta</a>
+      <a href="index.html#team">Equipo</a>
+    </nav>
+    <a class="btn btn--ghost btn--sm" href="index.html">&larr; Volver al proyecto</a>
+  </div>
+</header>
+
+<main id="donar-top">
+  <section class="donate-hero reveal">
+    <div class="donate-hero__bg" aria-hidden="true"></div>
+    <div class="donate-hero__inner">
+      <img class="donate-hero__scribe" src="assets/topher.png" alt="El escriba de Transcriptioneer" />
+      <span class="eyebrow eyebrow--accent">FINANCIAMIENTO COLECTIVO</span>
+      <h1>Selecciona cuánto quieres donar<br>y contáctame; estamos recién empezando.</h1>
+      <p class="donate-hero__lede">
+        Cada aporte, grande o pequeño, ayuda a construir Transcriptioneer.
+        Elige un monto abajo y te llevamos directo al pago.
+      </p>
+    </div>
+  </section>
+
+  <section class="donate-widget reveal" id="donar">
+    <div class="donate-card">
+      <div class="donate-card__amount-row">
+        <span class="donate-card__currency">$</span>
+        <span class="donate-card__amount" id="amountDisplay">10.000</span>
+        <span class="donate-card__currency-code">CLP</span>
+      </div>
+      <p class="donate-card__tier-name" id="tierName">Primer apoyo</p>
+
+      <input
+        type="range"
+        id="amountSlider"
+        class="slider"
+        min="0"
+        max="5"
+        step="1"
+        value="0"
+        aria-label="Monto a donar"
+      />
+      <div class="slider__ticks" aria-hidden="true">
+        <span>10mil</span>
+        <span>29mil</span>
+        <span>69mil</span>
+        <span>149mil</span>
+        <span>499mil</span>
+        <span>1millón</span>
+      </div>
+
+      <div class="donate-card__chips" id="chipRow">
+        <button type="button" class="chip is-active" data-index="0">$10.000</button>
+        <button type="button" class="chip" data-index="1">$29.000</button>
+        <button type="button" class="chip" data-index="2">$69.000</button>
+        <button type="button" class="chip" data-index="3">$149.000</button>
+        <button type="button" class="chip" data-index="4">$499.000</button>
+        <button type="button" class="chip" data-index="5">$1.000.000</button>
+      </div>
+
+      <a href="https://mpago.la/2neHxd9" target="_blank" rel="noopener" class="btn btn--primary btn--block donate-card__cta" id="donateBtn">
+        Donar $10.000 CLP
+      </a>
+      <p class="donate-card__note">Serás redirigido a Mercado Pago para completar tu aporte de forma segura.</p>
+    </div>
+
+    <div class="pay-methods">
+      <p class="pay-methods__label">Medios de pago aceptados</p>
+      <div class="pay-methods__row">
+        <span class="pay-badge pay-badge--mp">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M8 12.5c1 1.2 2.2 1.8 3.4 1 1.6-1 1-3-.4-3s-2-2 .4-3c1.2-.8 2.4-.2 3.4 1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          Mercado Pago
+        </span>
+        <span class="pay-badge pay-badge--webpay">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M3 10h18" stroke="currentColor" stroke-width="1.6"/></svg>
+          Webpay
+        </span>
+        <span class="pay-badge pay-badge--visa">
+          <svg width="26" height="16" viewBox="0 0 26 16" aria-hidden="true"><rect width="26" height="16" rx="3" fill="currentColor" opacity="0.12"/><text x="13" y="11.5" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-weight="700" font-size="8" fill="currentColor">VISA</text></svg>
+          Visa
+        </span>
+        <span class="pay-badge pay-badge--mc">
+          <svg width="26" height="16" viewBox="0 0 26 16" aria-hidden="true"><circle cx="10.5" cy="8" r="6" fill="#eb5424" opacity="0.85"/><circle cx="16.5" cy="8" r="6" fill="#f6a623" opacity="0.75"/></svg>
+          Mastercard
+        </span>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="site-footer__inner">
+    <a class="brand brand--footer" href="index.html">
+      <svg class="brand__mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <rect x="1" y="1" width="38" height="38" rx="10" stroke="currentColor" stroke-width="1.5"/>
+        <path d="M13 27V17a7 7 0 0 1 14 0v10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M10 27h20" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span>TRANSCRIPTIONEER<small>Entiende. Conecta. Recuerda.</small></span>
+    </a>
+    <p class="site-footer__copy">© 2026 Transcriptioneer. Todos los derechos reservados.</p>
+    <nav class="site-footer__links" aria-label="Pie de página">
+      <a href="#">Política de Privacidad</a>
+      <a href="#">Términos de Servicio</a>
+    </nav>
+    <div class="site-footer__social" aria-label="Redes sociales">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22 5.9c-.7.3-1.5.6-2.3.7.8-.5 1.5-1.3 1.8-2.3-.8.5-1.6.8-2.6 1a4 4 0 0 0-6.9 3.7A11.5 11.5 0 0 1 3.6 4.6a4 4 0 0 0 1.3 5.4c-.6 0-1.2-.2-1.7-.5v.1a4 4 0 0 0 3.3 4 4 4 0 0 1-1.8.1 4 4 0 0 0 3.8 2.8A8 8 0 0 1 2 18.6a11.5 11.5 0 0 0 6.3 1.8c7.5 0 11.6-6.4 11.6-11.9v-.5c.8-.6 1.5-1.3 2-2.1Z"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5ZM3 9h4v12H3V9Zm7 0h3.8v1.7h.05c.53-1 1.83-2.05 3.77-2.05C21.5 8.65 22 11 22 14v7h-4v-6.2c0-1.5-.03-3.4-2.08-3.4-2.08 0-2.4 1.6-2.4 3.3V21h-4V9Z"/></svg>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="m3 7 9 6 9-6" stroke="currentColor" stroke-width="1.5"/></svg>
+    </div>
+  </div>
+</footer>
+
+<script>
+  var TIERS = [
+    { amount: "10.000",    name: "Primer apoyo",              url: "https://mpago.la/2neHxd9" },
+    { amount: "29.000",    name: "Escriba inicial",           url: "https://mpago.la/1uC2cdY" },
+    { amount: "69.000",    name: "Guardián del conocimiento",  url: "https://mpago.la/2isJzDP" },
+    { amount: "149.000",   name: "Constructor de equipo",      url: "https://mpago.la/1ZDCc1c" },
+    { amount: "499.000",   name: "Visionario",                 url: "https://mpago.la/2DN9K8Z" },
+    { amount: "1.000.000", name: "Leyenda",                    url: "https://mpago.la/27eY13r" }
+  ];
+
+  var slider = document.getElementById("amountSlider");
+  var amountDisplay = document.getElementById("amountDisplay");
+  var tierName = document.getElementById("tierName");
+  var donateBtn = document.getElementById("donateBtn");
+  var chips = document.querySelectorAll(".chip");
+
+  function render(index) {
+    var t = TIERS[index];
+    amountDisplay.textContent = t.amount;
+    tierName.textContent = t.name;
+    donateBtn.href = t.url;
+    donateBtn.textContent = "Donar $" + t.amount + " CLP";
+    chips.forEach(function (chip, i) {
+      chip.classList.toggle("is-active", i === index);
+    });
+    slider.value = index;
+  }
+
+  slider.addEventListener("input", function () {
+    render(Number(slider.value));
+  });
+
+  chips.forEach(function (chip) {
+    chip.addEventListener("click", function () {
+      render(Number(chip.dataset.index));
+    });
+  });
+
+  var revealEls = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("is-visible");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.12 });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add("is-visible"); });
+  }
+</script>
+
+</body>
+</html>
