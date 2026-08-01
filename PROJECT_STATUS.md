@@ -184,6 +184,15 @@ This VPS is now the reference environment for finishing Milestone 3 below —
 the sandbox's Docker limitation (see history retained below) no longer
 applies to real verification work.
 
+**Update (2026-08-01):** local Whisper (the `base` model, CPU-only PyTorch)
+was installed and validated end-to-end on this same VPS, ahead of Milestone
+5 — see [`WHISPER_SETUP.md`](./WHISPER_SETUP.md) for hardware findings
+(1 vCPU is the binding constraint, not RAM), the `transcribe.py`
+provider-interface contract the future BullMQ worker will call, and
+maintenance/troubleshooting notes. Not yet wired into `apps/api` — that's
+the next real Milestone 4/5 work, including the minimal test endpoint
+discussed for connecting the local prototype frontend to it.
+
 ## Known pending infrastructure verification (historical — sandbox only)
 
 **Docker is still not usable in this development environment**, though the
