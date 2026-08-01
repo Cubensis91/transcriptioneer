@@ -1,0 +1,217 @@
+:root {
+  --bg: #060a16;
+  --glass-bg: rgba(12, 18, 40, 0.55);
+  --glass-bg-2: rgba(10, 15, 34, 0.7);
+  --glass-blur: blur(18px);
+  --border: rgba(148, 178, 255, 0.16);
+  --border-strong: rgba(148, 178, 255, 0.32);
+  --text: #eef2ff;
+  --text-muted: #a6b3d6;
+  --text-faint: #7683a8;
+  --accent: #3b82f6;
+  --accent-2: #60a5fa;
+  --accent-soft: rgba(59, 130, 246, 0.16);
+  --gold: #f4c95d;
+  --radius-lg: 20px;
+  --radius-md: 14px;
+}
+
+* { box-sizing: border-box; }
+html { color-scheme: dark; }
+body { margin: 0; color: var(--text); font-family: "Segoe UI", ui-sans-serif, system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+
+/* ---------- background: the reference art itself, darkened ---------- */
+.bg {
+  /* Oversized 20% on every side, then scaled down 20% via transform — nets a
+     genuine "zoom out" (more of the scene visible, portal reads smaller)
+     without revealing empty edges at the corners. */
+  position: fixed;
+  top: -20%; left: -20%; right: -20%; bottom: -20%;
+  z-index: 0;
+  background-image: url("bg-portal.png");
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.55) saturate(0.92);
+  transform: scale(0.8);
+}
+.bg-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(180deg, rgba(4, 7, 16, 0.55), rgba(4, 7, 16, 0.35) 40%, rgba(4, 7, 16, 0.65));
+}
+
+.shell { position: relative; z-index: 2; display: flex; min-height: 100vh; }
+
+/* ---------- sidebar ---------- */
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  padding: 1.5rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--glass-bg-2);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-right: 1px solid var(--border);
+}
+.sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-size: 0.82rem;
+}
+.sidebar__brand span { display: flex; flex-direction: column; }
+.sidebar__brand small { font-weight: 400; letter-spacing: normal; color: var(--text-faint); font-size: 0.65rem; margin-top: 0.1rem; }
+.brand__mark { color: var(--accent-2); width: 30px; height: 30px; flex-shrink: 0; }
+
+.sidebar__nav { display: flex; flex-direction: column; gap: 0.25rem; }
+.sidebar__nav a {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--radius-md);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.85rem;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.sidebar__nav a:hover { background: rgba(255, 255, 255, 0.05); color: var(--text); }
+.sidebar__nav a.is-active { background: var(--accent-soft); color: var(--text); font-weight: 600; }
+
+.sidebar__plan {
+  margin-top: auto;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--glass-bg);
+  border: 1px solid var(--border);
+}
+.sidebar__plan-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; color: var(--accent-2); margin: 0; }
+.sidebar__plan-sub { font-size: 0.76rem; color: var(--text-faint); margin: 0.3rem 0 0; }
+
+.sidebar__user { display: flex; align-items: center; gap: 0.65rem; padding-top: 0.25rem; }
+.sidebar__avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(160deg, var(--accent-2), var(--accent));
+  font-weight: 700; font-size: 0.8rem; color: white;
+}
+.sidebar__user strong { display: block; font-size: 0.82rem; }
+.sidebar__user small { color: var(--text-faint); font-size: 0.7rem; }
+
+/* ---------- main ---------- */
+.main { flex: 1; padding: 1.75rem 2.5rem 3rem; display: flex; flex-direction: column; gap: 1.75rem; min-width: 0; }
+
+.topbar { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+.topbar h1 { margin: 0; font-size: 1.3rem; letter-spacing: 0.06em; }
+.topbar p { margin: 0.2rem 0 0; color: var(--text-faint); font-size: 0.8rem; }
+.badge {
+  font-size: 0.7rem; font-weight: 600; color: var(--gold);
+  background: rgba(244, 201, 93, 0.1); border: 1px solid rgba(244, 201, 93, 0.3);
+  padding: 0.35rem 0.75rem; border-radius: 999px; white-space: nowrap;
+}
+
+/* ---------- intake, positioned over the artwork's core ---------- */
+.intake-zone {
+  /* Tuned against bg-portal.png's swirl core under `background-size:cover`
+     on a ~16:9 viewport. Cover crops top/bottom on wide screens, so this is
+     an approximation, not exact math — good enough for a local test page. */
+  position: fixed;
+  left: 47.5%;
+  top: 31%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  pointer-events: none;
+}
+.intake {
+  pointer-events: auto;
+  cursor: not-allowed;
+  width: 260px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.35rem;
+  padding: 1.5rem 1.25rem;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  justify-content: center;
+  background: rgba(6, 10, 22, 0.25);
+  border: 1px dashed var(--border-strong);
+}
+.intake input { display: none; }
+.intake__icon { color: var(--accent-2); }
+.intake strong { font-size: 0.95rem; }
+.intake small { color: var(--text-muted); font-size: 0.76rem; }
+.intake__formats { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.3rem; margin-top: 0.5rem; max-width: 190px; }
+.intake__formats span {
+  font-size: 0.6rem; font-weight: 600; color: var(--text-faint);
+  border: 1px solid var(--border); border-radius: 6px; padding: 0.12rem 0.35rem;
+}
+.intake__cta {
+  pointer-events: auto;
+  font-size: 0.85rem; font-weight: 600; padding: 0.7rem 1.5rem; border-radius: 999px;
+  border: 1px solid var(--border-strong); background: rgba(59, 130, 246, 0.18);
+  color: var(--text-muted); cursor: not-allowed;
+}
+
+/* ---------- process status ---------- */
+.status-card {
+  margin-top: 300px;
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+  max-width: 720px;
+}
+.status-card__label { margin: 0 0 0.9rem; font-size: 0.8rem; font-weight: 700; color: var(--text-muted); }
+.status-steps { display: flex; flex-wrap: wrap; gap: 1.25rem; list-style: none; margin: 0; padding: 0; }
+.status-steps li { display: flex; align-items: center; gap: 0.5rem; font-size: 0.76rem; color: var(--text-faint); }
+.status-steps .dot { width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--border-strong); display: inline-block; }
+
+/* ---------- lower grid ---------- */
+.lower-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.5rem; max-width: 900px; }
+.panel {
+  padding: 1.25rem 1.5rem;
+  border-radius: var(--radius-lg);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--border);
+}
+.panel__title { margin: 0 0 1rem; font-size: 0.85rem; font-weight: 700; }
+.empty-state { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0.6rem; padding: 1.5rem 0.5rem; color: var(--text-faint); }
+.empty-state p { margin: 0; font-size: 0.78rem; line-height: 1.5; }
+.stat-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.75rem; }
+.stat-list li { display: flex; justify-content: space-between; font-size: 0.82rem; color: var(--text-muted); }
+.stat-list strong { color: var(--text); }
+
+.disclaimer {
+  position: relative;
+  z-index: 2;
+  max-width: 560px;
+  margin: 0 auto 2rem;
+  padding: 0 1.5rem;
+  text-align: center;
+  font-size: 0.76rem;
+  color: var(--text-faint);
+  line-height: 1.6;
+}
+
+@media (max-width: 980px) {
+  .sidebar { display: none; }
+  .intake-zone { left: 50%; top: 34%; }
+  .lower-grid { grid-template-columns: 1fr; }
+}
