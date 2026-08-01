@@ -165,7 +165,28 @@ future unification decision.
 - "Ask the scribe" / chat has no backend — out of scope until the relevant
   product milestone.
 
-## Known pending infrastructure verification
+## Infrastructure verification — DONE (2026-08-01)
+
+The long-standing "never tested against a live database" blocker is resolved.
+A real VPS (Hostinger KVM 1, Ubuntu 24.04, `93.127.211.218`) was provisioned
+outside the dev sandbox specifically because Docker never worked there. On
+that VPS: `docker compose up -d` (hardened — Postgres/Redis/MinIO bound to
+`127.0.0.1` only, firewall via `ufw` on top since Docker bypasses `ufw`'s
+filter chain for published ports, real generated passwords instead of the
+compose file's dev defaults), then `prisma migrate deploy` applied
+`20260729231129_init_auth` for the first time ever — `User`,
+`Organization`, `OrganizationMember`, `RefreshToken`, `_prisma_migrations`
+tables now exist for real. `apps/api` built and run under PM2
+(`pm2 startup` + `pm2 save`, survives reboot); `GET /health` now returns
+`"status":"ok"`, not `"degraded"`. The app is reachable at
+`app.transcriptioneer.online` (DNS `A` record added; root domain left
+pointed at the existing crowdfunding landing page on shared hosting).
+
+This VPS is now the reference environment for finishing Milestone 3 below —
+the sandbox's Docker limitation (see history retained below) no longer
+applies to real verification work.
+
+## Known pending infrastructure verification (historical — sandbox only)
 
 **Docker is still not usable in this development environment**, though the
 specific symptom has changed since the Milestone 2.5 session (2026-07-29): at
@@ -233,10 +254,8 @@ above. Remaining: the NestJS auth module itself.
 
 ## Exact recommended first task when development resumes
 
-1. Confirm Docker is now available; run the pending infrastructure
-   verification above (migrate — this is the first real run of the
-   already-committed `20260729231129_init_auth` migration — generate,
-   confirm `/health` reports `"ok"`).
+1. ~~Confirm Docker is now available; run the pending infrastructure
+   verification~~ — **done 2026-08-01 on the VPS**, see above.
 2. Re-run `pnpm turbo run build typecheck lint test` to confirm the repo is
    still green after any environment changes since this session.
 3. Continue Milestone 3 per `MILESTONE_3_AUTH.md`: the auth module in
