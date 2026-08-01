@@ -69,18 +69,12 @@
           <span class="pill pill--live"><span class="dot"></span>En vivo</span>
         </div>
 
-        <div class="donut" role="progressbar" aria-label="Porcentaje recaudado" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" id="donut">
-          <svg viewBox="0 0 120 120" class="donut__ring" aria-hidden="true">
-            <circle class="donut__track" cx="60" cy="60" r="52" />
-            <circle class="donut__fill" id="donutFill" cx="60" cy="60" r="52" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 60 60)" />
-          </svg>
-          <div class="donut__center">
-            <span class="donut__pct" id="donutPct">0%</span>
-          </div>
-        </div>
-
         <p class="pledge-card__amount" id="raisedAmount">$0 <span>CLP</span></p>
         <p class="pledge-card__goal">recaudado de una meta de <span id="goalAmount">$0</span></p>
+        <div class="progress" role="progressbar" aria-label="Porcentaje recaudado" id="donut" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div class="progress__bar" id="donutFill" style="width:0%"></div>
+        </div>
+        <p class="progress__pct" id="donutPct">0%</p>
         <div class="pledge-card__stats">
           <div><strong id="backerCount">0</strong><span>patrocinador</span></div>
           <div><strong id="daysLeft">0</strong><span>días restantes</span></div>
@@ -387,20 +381,51 @@
   (function renderCampaignStats() {
     var pct = (CAMPAIGN.raised / CAMPAIGN.goal) * 100;
     var pctDisplay = (pct < 1 ? pct.toFixed(2) : pct.toFixed(1)).replace(".", ",");
-    var pctForDash = Math.max(pct, 0.15); // keep a visible sliver on the ring for tiny percentages
+    var pctForBar = Math.max(pct, 0.5); // keep a visible sliver on the bar for tiny percentages
 
     document.getElementById("raisedAmount").firstChild.textContent = formatCLP(CAMPAIGN.raised) + " ";
     document.getElementById("goalAmount").textContent = formatCLP(CAMPAIGN.goal);
     document.getElementById("backerCount").textContent = CAMPAIGN.backers;
     document.getElementById("donutPct").textContent = pctDisplay + "%";
     document.getElementById("donut").setAttribute("aria-valuenow", pct.toFixed(2));
-    document
-      .getElementById("donutFill")
-      .setAttribute("stroke-dasharray", pctForDash + " " + (100 - pctForDash));
+    document.getElementById("donutFill").style.width = pctForBar + "%";
 
     var msLeft = new Date(CAMPAIGN.deadline).getTime() - Date.now();
     var daysLeft = Math.max(0, Math.ceil(msLeft / 86400000));
     document.getElementById("daysLeft").textContent = daysLeft;
+  })();
+
+  (function scrollSpy() {
+    var sectionMap = [
+      { href: "#top", el: document.querySelector(".hero") },
+      { href: "#why", el: document.getElementById("why") },
+      { href: "#product", el: document.getElementById("product") },
+      { href: "#rewards", el: document.getElementById("rewards") },
+      { href: "#roadmap", el: document.getElementById("roadmap") },
+      { href: "#team", el: document.getElementById("team") }
+    ].filter(function (s) { return s.el; });
+
+    var navLinks = document.querySelectorAll(".nav__links a");
+    function setActive(href) {
+      navLinks.forEach(function (a) {
+        a.classList.toggle("is-active", a.getAttribute("href") === href);
+      });
+    }
+
+    if ("IntersectionObserver" in window) {
+      var spy = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (entry) {
+            if (!entry.isIntersecting) return;
+            var match = sectionMap.filter(function (s) { return s.el === entry.target; })[0];
+            if (match) setActive(match.href);
+          });
+        },
+        { rootMargin: "-40% 0px -55% 0px", threshold: 0 }
+      );
+      sectionMap.forEach(function (s) { spy.observe(s.el); });
+      setActive("#top");
+    }
   })();
 
   var revealEls = document.querySelectorAll(".reveal");
