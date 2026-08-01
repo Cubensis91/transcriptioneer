@@ -289,11 +289,13 @@
     <div class="roadmap" id="roadmap">
       <span class="eyebrow eyebrow--accent">HOJA DE RUTA</span>
       <ol class="stepper">
-        <li class="is-done"><span class="stepper__dot">&#10003;</span><p><strong>28 jul 2026</strong>Fundación y sistema de diseño</p></li>
-        <li class="is-current"><span class="stepper__dot"></span><p><strong>Ago–sep 2026</strong>Autenticación</p></li>
-        <li><span class="stepper__dot"></span><p><strong>Oct–dic 2026</strong>Captura de archivos y transcripción</p></li>
-        <li><span class="stepper__dot"></span><p><strong>Q1 2027</strong>Extracción y grafo de conocimiento</p></li>
-        <li><span class="stepper__dot"></span><p><strong>Q2 2027</strong>Ask Transcriptioneer</p></li>
+        <li class="is-done"><span class="stepper__dot">&#10003;</span><p><strong>28 jul 2026</strong>Fundación, infraestructura real y sistema de diseño</p></li>
+        <li class="is-current"><span class="stepper__dot"></span><p><strong>Ago–dic 2026</strong>Autenticación</p></li>
+        <li><span class="stepper__dot"></span><p><strong>Q1 2027</strong>Captura de archivos y transcripción</p></li>
+        <li><span class="stepper__dot"></span><p><strong>Q2 2027</strong>Pipeline de IA y extracción de conocimiento</p></li>
+        <li><span class="stepper__dot"></span><p><strong>Q3 2027</strong>Grafo de conocimiento y Ask Transcriptioneer</p></li>
+        <li><span class="stepper__dot"></span><p><strong>Q4 2027</strong>Insights, pulido y lanzamiento público</p></li>
+        <li><span class="stepper__dot"></span><p><strong>Dic 2027</strong>Cierre de la hoja de ruta inicial</p></li>
       </ol>
     </div>
 
@@ -363,6 +365,16 @@
   </div>
 </footer>
 
+<div class="video-modal" id="videoModal" hidden>
+  <div class="video-modal__backdrop" data-video-close></div>
+  <div class="video-modal__panel">
+    <button class="video-modal__close" type="button" data-video-close aria-label="Cerrar video">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="video-modal__frame" id="videoModalFrame"></div>
+  </div>
+</div>
+
 <script>
   // Single source of truth for the campaign numbers shown in the pledge card —
   // change these three values and everything else (percent, donut fill, days
@@ -393,6 +405,36 @@
     var msLeft = new Date(CAMPAIGN.deadline).getTime() - Date.now();
     var daysLeft = Math.max(0, Math.ceil(msLeft / 86400000));
     document.getElementById("daysLeft").textContent = daysLeft;
+  })();
+
+  (function videoModal() {
+    var VIMEO_SRC = "https://player.vimeo.com/video/1214772262?h=7e3f974c65&autoplay=1";
+    var modal = document.getElementById("videoModal");
+    var frameHost = document.getElementById("videoModalFrame");
+    var triggers = document.querySelectorAll("[data-video-trigger]");
+
+    function open() {
+      frameHost.innerHTML =
+        '<iframe src="' + VIMEO_SRC + '" width="100%" height="100%" frameborder="0" ' +
+        'referrerpolicy="strict-origin-when-cross-origin" ' +
+        'allow="autoplay; fullscreen; picture-in-picture; clipboard-write; encrypted-media; web-share" ' +
+        'allowfullscreen title="Video de Transcriptioneer"></iframe>';
+      modal.hidden = false;
+      document.body.style.overflow = "hidden";
+    }
+    function close() {
+      modal.hidden = true;
+      frameHost.innerHTML = ""; // stops playback
+      document.body.style.overflow = "";
+    }
+
+    triggers.forEach(function (t) { t.addEventListener("click", open); });
+    modal.querySelectorAll("[data-video-close]").forEach(function (el) {
+      el.addEventListener("click", close);
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !modal.hidden) close();
+    });
   })();
 
   (function scrollSpy() {

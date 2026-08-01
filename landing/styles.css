@@ -615,3 +615,49 @@ h1 {
   .brand__mark { width: 26px; height: 26px; }
   .nav .btn--sm { padding: 0.55rem 0.9rem; font-size: 0.78rem; }
 }
+
+/* ---------- video modal ---------- */
+.video-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+.video-modal[hidden] { display: none; }
+.video-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(4, 7, 16, 0.85);
+  backdrop-filter: blur(6px);
+}
+.video-modal__panel {
+  position: relative;
+  width: min(900px, 100%);
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow-soft);
+  background: #000;
+}
+.video-modal__frame, .video-modal__frame iframe { width: 100%; height: 100%; border: 0; display: block; }
+.video-modal__close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  z-index: 1;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: rgba(6, 10, 22, 0.7);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.video-modal__close:hover { background: rgba(6, 10, 22, 0.9); }
