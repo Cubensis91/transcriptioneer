@@ -11,8 +11,7 @@ import { PanelChromeHeader } from "@/components/chrome/panel-chrome-header";
 import { ProcessStepper } from "@/components/dashboard/process-stepper";
 import { QuickInsightsPanel } from "@/components/dashboard/quick-insights-panel";
 import { processingStageToVisualState } from "@/components/file-state/file-state-meta";
-import { AppSidebar } from "@/components/navigation/app-sidebar";
-import { MobileNav } from "@/components/navigation/mobile-nav";
+import { NotificationsButton } from "@/components/navigation/notifications-button";
 import { IntakeThreshold } from "@/components/upload/intake-threshold";
 import { mockDocuments } from "@/lib/mock-data";
 
@@ -62,61 +61,56 @@ export default function Home() {
   const isDark = mounted && resolvedTheme === "dark";
 
   return (
-    <div className="flex min-h-dvh w-full bg-bg">
-      <AppSidebar className="hidden lg:flex" />
+    <>
+      <header className="flex items-center gap-4 px-4 py-4 sm:px-8">
+        <div className="lg:hidden">
+          <BrandLockup />
+        </div>
+        <div className="hidden flex-1 flex-col items-center lg:flex">
+          <p className="font-display text-lg font-medium text-text">Understand. Connect. Remember.</p>
+        </div>
+        <div className="ml-auto flex items-center gap-3">
+          <ApiStatusDot />
+          <NotificationsButton />
+          <ThemeToggleButton isDark={isDark} onClick={() => setTheme(isDark ? "light" : "dark")} />
+          <Avatar name="Elena Marsh" size="sm" />
+        </div>
+      </header>
 
-      <div className="flex min-h-dvh flex-1 flex-col">
-        <header className="flex items-center gap-4 px-4 py-4 sm:px-8">
-          <div className="lg:hidden">
-            <BrandLockup />
-          </div>
-          <div className="hidden flex-1 flex-col items-center lg:flex">
-            <p className="font-display text-lg font-medium text-text">Understand. Connect. Remember.</p>
-          </div>
-          <div className="ml-auto flex items-center gap-3">
-            <ApiStatusDot />
-            <ThemeToggleButton isDark={isDark} onClick={() => setTheme(isDark ? "light" : "dark")} />
-            <Avatar name="Elena Marsh" size="sm" />
-          </div>
-        </header>
+      <main className="flex flex-1 flex-col gap-8 overflow-y-auto px-4 pb-24 sm:px-8 lg:pb-8">
+        <IntakeThreshold
+          size="hero"
+          state={processingStageToVisualState(inFlightDocument.stage)}
+          className="mx-auto w-full max-w-3xl"
+        />
 
-        <main className="flex flex-1 flex-col gap-8 overflow-y-auto px-4 pb-24 sm:px-8 lg:pb-8">
-          <IntakeThreshold
-            size="hero"
-            state={processingStageToVisualState(inFlightDocument.stage)}
-            className="mx-auto w-full max-w-3xl"
-          />
+        <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1fr_20rem]">
+          <div className="flex flex-col gap-6">
+            <Card className="overflow-hidden">
+              <PanelChromeHeader title="Right now" />
+              <CardContent className="pt-5">
+                <ProcessStepper
+                  currentState={processingStageToVisualState(inFlightDocument.stage)}
+                  kind={inFlightDocument.kind === "audio" ? "audio" : "document"}
+                />
+              </CardContent>
+            </Card>
 
-          <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1fr_20rem]">
-            <div className="flex flex-col gap-6">
-              <Card className="overflow-hidden">
-                <PanelChromeHeader title="Right now" />
-                <CardContent className="pt-5">
-                  <ProcessStepper
-                    currentState={processingStageToVisualState(inFlightDocument.stage)}
-                    kind={inFlightDocument.kind === "audio" ? "audio" : "document"}
-                  />
-                </CardContent>
-              </Card>
-
-              <div>
-                <h2 className="mb-3 font-display text-lg font-medium text-text">Recently entrusted to me</h2>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {mockDocuments.map((document) => (
-                    <DocumentCard key={document.id} document={document} />
-                  ))}
-                </div>
+            <div>
+              <h2 className="mb-3 font-display text-lg font-medium text-text">Recently entrusted to me</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {mockDocuments.map((document) => (
+                  <DocumentCard key={document.id} document={document} />
+                ))}
               </div>
             </div>
-
-            <div className="flex flex-col gap-6">
-              <QuickInsightsPanel />
-            </div>
           </div>
-        </main>
 
-        <MobileNav className="fixed inset-x-0 bottom-0 lg:hidden" />
-      </div>
-    </div>
+          <div className="flex flex-col gap-6">
+            <QuickInsightsPanel />
+          </div>
+        </div>
+      </main>
+    </>
   );
 }

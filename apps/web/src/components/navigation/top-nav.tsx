@@ -3,6 +3,7 @@
 import { Avatar, SearchInput, ThemeToggleButton, cn } from "@transcriptioneer/ui";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { NotificationsButton } from "./notifications-button";
 
 export function TopNav({ className }: { className?: string }) {
   const { resolvedTheme, setTheme } = useTheme();
@@ -28,6 +29,7 @@ export function TopNav({ className }: { className?: string }) {
         <SearchInput placeholder="Search your knowledge base…" aria-label="Search" />
       </div>
       <div className="ml-auto flex items-center gap-2">
+        <NotificationsButton />
         <ThemeToggleButton
           isDark={isDark}
           onClick={() => setTheme(isDark ? "light" : "dark")}

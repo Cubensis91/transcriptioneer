@@ -1,0 +1,82 @@
+"use client";
+
+import { Button, EmptyState, SearchInput } from "@transcriptioneer/ui";
+import { Library as LibraryIcon } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { DocumentCard } from "@/components/cards/document-card";
+import { TopNav } from "@/components/navigation/top-nav";
+import { type MockDocument, mockDocuments } from "@/lib/mock-data";
+import { libraryService } from "@/lib/services/library-service";
+
+const kinds: { label: string; value: MockDocument["kind"] | "all" }[] = [
+  { label: "All", value: "all" },
+  { label: "Audio", value: "audio" },
+  { label: "Video", value: "video" },
+  { label: "PDF", value: "pdf" },
+  { label: "Docs", value: "docx" },
+];
+
+export default function LibraryPage() {
+  const [query, setQuery] = useState("");
+  const [kind, setKind] = useState<MockDocument["kind"] | "all">("all");
+  const [documents, setDocuments] = useState<MockDocument[]>(mockDocuments);
+
+  useEffect(() => {
+    libraryService.listDocuments({ query, kind }).then(setDocuments);
+  }, [query, kind]);
+
+  const hasResults = useMemo(() => documents.length > 0, [documents]);
+
+  return (
+    <>
+      <TopNav />
+      <main className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 pb-24 sm:px-8 lg:pb-8">
+        <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
+          <div className="flex flex-col gap-1">
+            <h1 className="font-display text-2xl font-medium text-text">Library</h1>
+            <p className="text-sm text-text-muted">Everything you&apos;ve entrusted to your scribe, in one place.</p>
+          </div>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <SearchInput
+              placeholder="Search titles and summaries…"
+              aria-label="Search library"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              className="max-w-md"
+            />
+            <div className="flex flex-wrap gap-2">
+              {kinds.map((k) => (
+                <Button
+                  key={k.value}
+                  size="sm"
+                  variant={kind === k.value ? "tertiary" : "ghost"}
+                  onClick={() => setKind(k.value)}
+                >
+                  {k.label}
+                </Button>
+              ))}
+            </div>
+          </div>
+
+          {hasResults ? (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {documents.map((document) => (
+                <Link key={document.id} href={`/library/${document.id}`} className="rounded-lg">
+                  <DocumentCard document={document} />
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <EmptyState
+              icon={<LibraryIcon className="size-8" aria-hidden />}
+              title="Nothing matches yet"
+              description="Try a different search term, or drop a new file on the dashboard to add to your library."
+            />
+          )}
+        </div>
+      </main>
+    </>
+  );
+}
