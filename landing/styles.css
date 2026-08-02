@@ -136,16 +136,27 @@ h1, h2, .brand span { font-family: var(--font-display); }
   color: var(--text-muted);
 }
 .nav__links a {
+  position: relative;
   padding: 0.45rem 0.85rem;
   border-radius: 999px;
-  transition: background 0.2s ease, color 0.2s ease;
+  transition: color 0.2s ease;
 }
 .nav__links a:hover { color: var(--text); }
 .nav__links a.is-active {
-  background: linear-gradient(180deg, var(--accent-2), var(--accent));
-  color: white;
+  color: var(--text);
   font-weight: 600;
-  box-shadow: 0 4px 14px -4px rgba(59, 130, 246, 0.6);
+}
+.nav__links a.is-active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 0 6px 1px rgba(96, 165, 250, 0.65);
+  transform: translateX(-50%);
 }
 
 /* ---------- hero ---------- */
