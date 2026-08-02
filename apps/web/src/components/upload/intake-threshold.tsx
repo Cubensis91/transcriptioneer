@@ -3,9 +3,8 @@
 import { Button, cn } from "@transcriptioneer/ui";
 import { motion, useReducedMotion } from "framer-motion";
 import { Lock } from "lucide-react";
+import Image from "next/image";
 import { useRef, useState } from "react";
-import type { FileVisualState } from "@/components/file-state/file-state-meta";
-import { ScribeMark } from "@/components/scribe-mark";
 import type { MockDocument } from "@/lib/mock-data";
 import { FileTypeIndicator } from "./file-type-indicator";
 
@@ -29,12 +28,10 @@ const PARTICLES = [
  * interactive control inside another.
  */
 export function IntakeThreshold({
-  state,
   onFilesSelected,
   size = "default",
   className,
 }: {
-  state?: FileVisualState;
   onFilesSelected?: (files: FileList) => void;
   /** "hero" is the enlarged homepage centerpiece treatment. */
   size?: "default" | "hero";
@@ -74,6 +71,18 @@ export function IntakeThreshold({
         className,
       )}
     >
+      {/* Portal art, kept faint so it reads as texture behind the cosmic
+          gradient rather than competing with the icon/text above it. */}
+      <Image
+        src="/brand/intake-bg.jpg"
+        alt=""
+        fill
+        priority={hero}
+        sizes="(min-width: 1024px) 640px, 100vw"
+        className="pointer-events-none absolute inset-0 object-cover opacity-10"
+        aria-hidden
+      />
+
       {/* Soft breathing glow — an ambient "alive" cue, never a hard flash;
           skipped entirely under reduced motion rather than just slowed. */}
       {!reduceMotion && (
@@ -110,17 +119,21 @@ export function IntakeThreshold({
         onChange={(e) => handleFiles(e.target.files)}
       />
 
-      <ScribeMark
-        state={state}
+      <Image
+        src="/brand/scribe-emblem.png"
+        alt=""
+        width={112}
+        height={112}
         className={cn("relative drop-shadow-[0_8px_24px_rgb(0_0_0/0.4)]", hero ? "size-28" : "size-20")}
+        aria-hidden
       />
 
       <div className="relative flex flex-col gap-1.5">
         <p className={cn("font-display font-medium text-white", hero ? "text-2xl" : "text-xl")}>
-          Bring me something to understand
+          Tráeme algo para entender
         </p>
         <p className={cn("text-white/70", hero ? "text-base" : "text-sm")}>
-          Drop it here, or click below — I&apos;ll take it from there.
+          Suéltalo aquí o haz clic abajo — yo me encargo del resto.
         </p>
       </div>
 
@@ -137,12 +150,12 @@ export function IntakeThreshold({
         className="relative mt-2"
         onClick={() => inputRef.current?.click()}
       >
-        Browse files
+        Explorar archivos
       </Button>
 
       <p className="relative flex items-center gap-1.5 text-xs text-white/50">
         <Lock className="size-3" aria-hidden />
-        Secure, private, yours only.
+        Seguro, privado, solo tuyo.
       </p>
     </motion.div>
   );

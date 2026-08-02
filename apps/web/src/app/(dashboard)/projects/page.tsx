@@ -18,8 +18,8 @@ export default function ProjectsPage() {
       <main className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 pb-24 sm:px-8 lg:pb-8">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
           <div className="flex flex-col gap-1">
-            <h1 className="font-display text-2xl font-medium text-text">Projects</h1>
-            <p className="text-sm text-text-muted">Documents grouped by what they&apos;re actually for.</p>
+            <h1 className="font-display text-2xl font-medium text-text">Proyectos</h1>
+            <p className="text-sm text-text-muted">Documentos agrupados según su propósito real.</p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -32,7 +32,7 @@ export default function ProjectsPage() {
                 <CardContent className="flex flex-col gap-3">
                   <div className="flex items-center justify-between text-xs text-text-subtle">
                     <span>
-                      {project.documentCount} {project.documentCount === 1 ? "document" : "documents"}
+                      {project.documentCount} {project.documentCount === 1 ? "documento" : "documentos"}
                     </span>
                     <span>{project.progress}%</span>
                   </div>

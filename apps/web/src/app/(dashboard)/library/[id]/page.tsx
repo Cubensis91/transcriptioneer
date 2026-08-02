@@ -51,7 +51,7 @@ export default function DocumentDetailPage() {
             href="/library"
             className="flex w-fit items-center gap-1.5 text-sm text-text-muted hover:text-text"
           >
-            <ArrowLeft className="size-4" aria-hidden /> Back to Library
+            <ArrowLeft className="size-4" aria-hidden /> Volver a la biblioteca
           </Link>
 
           {!document ? (
@@ -68,25 +68,25 @@ export default function DocumentDetailPage() {
 
               <Tabs defaultValue="summary">
                 <TabsList>
-                  <TabsTrigger value="summary">Summary</TabsTrigger>
-                  <TabsTrigger value="transcript">Transcript</TabsTrigger>
-                  <TabsTrigger value="ideas">Ideas &amp; entities</TabsTrigger>
-                  <TabsTrigger value="connections">Connections</TabsTrigger>
+                  <TabsTrigger value="summary">Resumen</TabsTrigger>
+                  <TabsTrigger value="transcript">Transcripción</TabsTrigger>
+                  <TabsTrigger value="ideas">Ideas y entidades</TabsTrigger>
+                  <TabsTrigger value="connections">Conexiones</TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="summary">
                   <Card>
-                    <PanelChromeHeader title="What I understood" />
+                    <PanelChromeHeader title="Lo que entendí" />
                     <CardContent className="pt-5">
                       {document.summary ? (
                         <SummaryBlock
                           summary={document.summary}
-                          detailedSummary="Full detailed summary will read like a colleague's recap — every claim traceable back to a timestamp or page in the source, not a generic paraphrase."
+                          detailedSummary="El resumen detallado completo se leerá como el resumen de un colega: cada afirmación se podrá rastrear hasta una marca de tiempo o página de la fuente, no será una paráfrasis genérica."
                         />
                       ) : (
                         <EmptyState
-                          title="Still processing"
-                          description="The summary will appear here as soon as this document finishes analysis."
+                          title="Aún en proceso"
+                          description="El resumen aparecerá aquí en cuanto este documento termine de analizarse."
                         />
                       )}
                     </CardContent>
@@ -95,16 +95,17 @@ export default function DocumentDetailPage() {
 
                 <TabsContent value="transcript">
                   <Card>
-                    <PanelChromeHeader title="Transcript" />
+                    <PanelChromeHeader title="Transcripción" />
                     <CardContent className="flex flex-col gap-3 pt-5 text-sm leading-relaxed text-text-muted">
                       <p>
-                        <span className="font-medium text-text">[00:00]</span> This is a placeholder
-                        transcript segment — once Milestone 5 lands, this tab reads real Whisper output
-                        with per-speaker segments and timestamps you can click to seek.
+                        <span className="font-medium text-text">[00:00]</span> Este es un segmento de
+                        transcripción de marcador de posición — cuando llegue el Hito 5, esta pestaña
+                        mostrará la salida real de Whisper, con segmentos por hablante y marcas de tiempo
+                        en las que podrás hacer clic para saltar.
                       </p>
                       <p>
-                        <span className="font-medium text-text">[00:14]</span> Until then, the shape of
-                        this view is final; only the source of the text changes.
+                        <span className="font-medium text-text">[00:14]</span> Hasta entonces, la forma
+                        de esta vista es definitiva; solo cambiará el origen del texto.
                       </p>
                     </CardContent>
                   </Card>
@@ -112,31 +113,31 @@ export default function DocumentDetailPage() {
 
                 <TabsContent value="ideas">
                   <Card>
-                    <PanelChromeHeader title="Extracted" />
+                    <PanelChromeHeader title="Extraído" />
                     <CardContent className="flex flex-col gap-6 pt-5">
-                      <EntityList label="People" items={mockPeople.map((p) => p.name)} variant="accent" />
-                      <EntityList label="Topics" items={mockTopics.map((t) => t.name)} />
+                      <EntityList label="Personas" items={mockPeople.map((p) => p.name)} variant="accent" />
+                      <EntityList label="Temas" items={mockTopics.map((t) => t.name)} />
                       <div>
                         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-subtle">
-                          Tasks
+                          Tareas
                         </p>
                         <BulletedList icon={CheckSquare} items={mockTasks.map((t) => t.title)} />
                       </div>
                       <div>
                         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-subtle">
-                          Open questions
+                          Preguntas abiertas
                         </p>
                         <BulletedList icon={HelpCircle} items={mockQuestions} />
                       </div>
                       <div>
                         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-subtle">
-                          Facts
+                          Datos
                         </p>
                         <BulletedList icon={Lightbulb} items={mockFacts} />
                       </div>
                       <div>
                         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-text-subtle">
-                          Dates
+                          Fechas
                         </p>
                         <BulletedList icon={CalendarDays} items={mockImportantDates} />
                       </div>
@@ -147,17 +148,17 @@ export default function DocumentDetailPage() {
 
                 <TabsContent value="connections">
                   <Card>
-                    <PanelChromeHeader title="Connected elsewhere" />
+                    <PanelChromeHeader title="Conectado en otros lugares" />
                     <CardContent className="pt-5">
                       <EmptyState
-                        title="Full graph coming to this tab"
-                        description="See the Connections page for how this document links to people, topics, and other files across your knowledge base."
+                        title="El grafo completo llegará a esta pestaña"
+                        description="Consulta la página de Conexiones para ver cómo este documento se vincula con personas, temas y otros archivos de tu base de conocimiento."
                         action={
                           <Link
                             href="/connections"
                             className="text-sm font-medium text-accent hover:underline"
                           >
-                            Open Connections →
+                            Abrir Conexiones →
                           </Link>
                         }
                       />

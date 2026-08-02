@@ -10,11 +10,11 @@ import { type MockDocument, mockDocuments } from "@/lib/mock-data";
 import { libraryService } from "@/lib/services/library-service";
 
 const kinds: { label: string; value: MockDocument["kind"] | "all" }[] = [
-  { label: "All", value: "all" },
+  { label: "Todo", value: "all" },
   { label: "Audio", value: "audio" },
   { label: "Video", value: "video" },
   { label: "PDF", value: "pdf" },
-  { label: "Docs", value: "docx" },
+  { label: "Documentos", value: "docx" },
 ];
 
 export default function LibraryPage() {
@@ -34,14 +34,14 @@ export default function LibraryPage() {
       <main className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 pb-24 sm:px-8 lg:pb-8">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
           <div className="flex flex-col gap-1">
-            <h1 className="font-display text-2xl font-medium text-text">Library</h1>
-            <p className="text-sm text-text-muted">Everything you&apos;ve entrusted to your scribe, in one place.</p>
+            <h1 className="font-display text-2xl font-medium text-text">Biblioteca</h1>
+            <p className="text-sm text-text-muted">Todo lo que le has confiado a tu escriba, en un solo lugar.</p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <SearchInput
-              placeholder="Search titles and summaries…"
-              aria-label="Search library"
+              placeholder="Buscar títulos y resúmenes…"
+              aria-label="Buscar en la biblioteca"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="max-w-md"
@@ -71,8 +71,8 @@ export default function LibraryPage() {
           ) : (
             <EmptyState
               icon={<LibraryIcon className="size-8" aria-hidden />}
-              title="Nothing matches yet"
-              description="Try a different search term, or drop a new file on the dashboard to add to your library."
+              title="Todavía no hay coincidencias"
+              description="Prueba con otro término de búsqueda o suelta un archivo nuevo en el panel para agregarlo a tu biblioteca."
             />
           )}
         </div>

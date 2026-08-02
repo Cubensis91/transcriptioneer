@@ -33,11 +33,11 @@ function ApiStatusDot() {
       .request<HealthStatus>("/health")
       .then(setHealth)
       .catch((err: unknown) => {
-        setError(err instanceof ApiClientError ? err.message : "API unreachable");
+        setError(err instanceof ApiClientError ? err.message : "API no disponible");
       });
   }, []);
 
-  const title = error ? `API unreachable — ${error}` : health ? `${health.status} · ${health.service}` : "checking…";
+  const title = error ? `API no disponible — ${error}` : health ? `${health.status} · ${health.service}` : "verificando…";
 
   return (
     <span
@@ -67,7 +67,7 @@ export default function Home() {
           <BrandLockup />
         </div>
         <div className="hidden flex-1 flex-col items-center lg:flex">
-          <p className="font-display text-lg font-medium text-text">Understand. Connect. Remember.</p>
+          <p className="font-display text-lg font-medium text-text">Entiende. Conecta. Recuerda.</p>
         </div>
         <div className="ml-auto flex items-center gap-3">
           <ApiStatusDot />
@@ -78,16 +78,12 @@ export default function Home() {
       </header>
 
       <main className="flex flex-1 flex-col gap-8 overflow-y-auto px-4 pb-24 sm:px-8 lg:pb-8">
-        <IntakeThreshold
-          size="hero"
-          state={processingStageToVisualState(inFlightDocument.stage)}
-          className="mx-auto w-full max-w-3xl"
-        />
+        <IntakeThreshold size="hero" className="mx-auto w-full max-w-3xl" />
 
         <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1fr_20rem]">
           <div className="flex flex-col gap-6">
             <Card className="overflow-hidden">
-              <PanelChromeHeader title="Right now" />
+              <PanelChromeHeader title="Ahora mismo" />
               <CardContent className="pt-5">
                 <ProcessStepper
                   currentState={processingStageToVisualState(inFlightDocument.stage)}
@@ -97,7 +93,7 @@ export default function Home() {
             </Card>
 
             <div>
-              <h2 className="mb-3 font-display text-lg font-medium text-text">Recently entrusted to me</h2>
+              <h2 className="mb-3 font-display text-lg font-medium text-text">Recientemente confiado a mí</h2>
               <div className="grid gap-4 sm:grid-cols-2">
                 {mockDocuments.map((document) => (
                   <DocumentCard key={document.id} document={document} />

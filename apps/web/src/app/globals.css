@@ -9,7 +9,7 @@
 
 @theme inline {
   /* ---- Fonts ------------------------------------------------------------ */
-  --font-display: var(--font-fraunces), var(--font-display-tokens);
+  --font-display: var(--font-cinzel), var(--font-display-tokens);
   --font-sans: var(--font-geist-sans), var(--font-sans-tokens);
   --font-mono: var(--font-geist-mono), var(--font-mono-tokens);
 

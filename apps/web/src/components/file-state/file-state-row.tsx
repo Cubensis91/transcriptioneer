@@ -40,7 +40,7 @@ export function FileStateRow({ name, meta, kind, state, progress, onRetry, class
       {state === "failed" && onRetry && (
         <Button variant="ghost" size="sm" onClick={onRetry}>
           <RotateCw className="size-3.5" aria-hidden />
-          Retry
+          Reintentar
         </Button>
       )}
     </div>

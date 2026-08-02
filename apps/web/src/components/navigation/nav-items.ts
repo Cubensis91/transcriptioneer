@@ -1,11 +1,11 @@
 import { CheckSquare, Home, Library, Network, Settings, Sparkles, SquareKanban } from "lucide-react";
 
 export const navItems = [
-  { label: "Dashboard", href: "/", icon: Home },
-  { label: "Library", href: "/library", icon: Library },
-  { label: "Ask", href: "/ask", icon: Sparkles },
-  { label: "Insights", href: "/insights", icon: CheckSquare },
-  { label: "Connections", href: "/connections", icon: Network },
-  { label: "Projects", href: "/projects", icon: SquareKanban },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Panel", href: "/", icon: Home },
+  { label: "Biblioteca", href: "/library", icon: Library },
+  { label: "Preguntar", href: "/ask", icon: Sparkles },
+  { label: "Perspectivas", href: "/insights", icon: CheckSquare },
+  { label: "Conexiones", href: "/connections", icon: Network },
+  { label: "Proyectos", href: "/projects", icon: SquareKanban },
+  { label: "Configuración", href: "/settings", icon: Settings },
 ] as const;

@@ -19,7 +19,7 @@ export function AppSidebar({ className }: { className?: string }) {
     >
       <BrandLockup className="px-2 py-2" />
 
-      <nav className="mt-6 flex flex-col gap-0.5" aria-label="Primary">
+      <nav className="mt-6 flex flex-col gap-0.5" aria-label="Principal">
         {navItems.map(({ label, href, icon: Icon }) => {
           const isActive = href === "/" ? pathname === "/" : pathname?.startsWith(href);
           return (

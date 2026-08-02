@@ -5,7 +5,7 @@ export function TypographySection() {
     <Section
       id="typography"
       title="Typography"
-      description="Fraunces (a warm, editorial serif with optical sizing) for display and headings; Geist Sans for UI and body copy; Geist Mono for data and code. The pairing is meant to read as calm and considered rather than another all-grotesk AI dashboard."
+      description="Cinzel (a classical, engraved-capitals serif matching the scribe emblem) for display and headings; Geist Sans for UI and body copy; Geist Mono for data and code. The pairing is meant to read as calm and considered rather than another all-grotesk AI dashboard."
     >
       <div className="flex flex-col gap-6">
         <div>

@@ -29,41 +29,41 @@ export type MockDocument = {
 export const mockDocuments: MockDocument[] = [
   {
     id: "doc-1",
-    title: "Q3 roadmap sync",
+    title: "Sincronización de la hoja de ruta del Q3",
     kind: "audio",
     stage: "completed",
-    updatedAt: "2h ago",
+    updatedAt: "hace 2 h",
     durationOrPages: "34 min",
     summary:
-      "Team aligned on shipping the retrieval pipeline before the knowledge chat surfaces in the product.",
+      "El equipo se alineó para lanzar el pipeline de recuperación antes de que el chat de conocimiento aparezca en el producto.",
     project: "Respira",
   },
   {
     id: "doc-2",
-    title: "Vendor security questionnaire",
+    title: "Cuestionario de seguridad de proveedores",
     kind: "pdf",
     stage: "analyzing",
-    updatedAt: "12m ago",
-    durationOrPages: "18 pages",
-    summary: "Extracted clauses on data residency are pending classification.",
-    project: "Procurement",
+    updatedAt: "hace 12 min",
+    durationOrPages: "18 páginas",
+    summary: "Las cláusulas extraídas sobre residencia de datos están pendientes de clasificación.",
+    project: "Adquisiciones",
   },
   {
     id: "doc-3",
-    title: "Client onboarding notes",
+    title: "Notas de incorporación de clientes",
     kind: "docx",
     stage: "completed",
-    updatedAt: "yesterday",
-    durationOrPages: "6 pages",
-    summary: "Onboarding checklist finalized; two open questions about billing cadence.",
+    updatedAt: "ayer",
+    durationOrPages: "6 páginas",
+    summary: "Lista de incorporación finalizada; quedan dos preguntas abiertas sobre la frecuencia de facturación.",
     project: "Acme Co.",
   },
   {
     id: "doc-4",
-    title: "Standup — August 4",
+    title: "Standup — 4 de agosto",
     kind: "audio",
     stage: "transcribing",
-    updatedAt: "3m ago",
+    updatedAt: "hace 3 min",
     durationOrPages: "9 min",
     summary: "",
     project: "Respira",
@@ -79,9 +79,9 @@ export type MockTask = {
 };
 
 export const mockTasks: MockTask[] = [
-  { id: "t-1", title: "Send updated MSA to legal", done: false, due: "Fri", project: "Acme Co." },
-  { id: "t-2", title: "Confirm retention window with vendor", done: false, due: "Mon", project: "Procurement" },
-  { id: "t-3", title: "Draft chat citation UX spec", done: true, project: "Respira" },
+  { id: "t-1", title: "Enviar el MSA actualizado a legal", done: false, due: "vie", project: "Acme Co." },
+  { id: "t-2", title: "Confirmar la ventana de retención con el proveedor", done: false, due: "lun", project: "Adquisiciones" },
+  { id: "t-3", title: "Redactar la especificación de UX para las citas del chat", done: true, project: "Respira" },
 ];
 
 export type MockDecision = {
@@ -94,15 +94,15 @@ export type MockDecision = {
 export const mockDecisions: MockDecision[] = [
   {
     id: "d-1",
-    text: "Ship retrieval on pgvector before evaluating a dedicated vector store.",
-    date: "Jul 22",
+    text: "Lanzar la recuperación sobre pgvector antes de evaluar un almacén de vectores dedicado.",
+    date: "22 jul",
     project: "Respira",
   },
   {
     id: "d-2",
-    text: "Require SOC 2 report before renewing the contract.",
-    date: "Jul 18",
-    project: "Procurement",
+    text: "Exigir el informe SOC 2 antes de renovar el contrato.",
+    date: "18 jul",
+    project: "Adquisiciones",
   },
 ];
 
@@ -113,49 +113,49 @@ export type MockPerson = {
 };
 
 export const mockPeople: MockPerson[] = [
-  { name: "Elena Marsh", role: "Product", mentions: 14 },
-  { name: "Juan Delgado", role: "Finance", mentions: 9 },
+  { name: "Elena Marsh", role: "Producto", mentions: 14 },
+  { name: "Juan Delgado", role: "Finanzas", mentions: 9 },
   { name: "Priya Natarajan", role: "Legal", mentions: 5 },
 ];
 
 export type MockTopic = { name: string; count: number };
 
 export const mockTopics: MockTopic[] = [
-  { name: "Retrieval quality", count: 11 },
-  { name: "Billing cadence", count: 6 },
-  { name: "Data residency", count: 4 },
-  { name: "Onboarding", count: 3 },
+  { name: "Calidad de recuperación", count: 11 },
+  { name: "Frecuencia de facturación", count: 6 },
+  { name: "Residencia de datos", count: 4 },
+  { name: "Incorporación", count: 3 },
 ];
 
 export const mockKeywords = [
   "pgvector",
-  "citations",
-  "retention window",
+  "citas",
+  "ventana de retención",
   "SOC 2",
-  "chunking",
+  "fragmentación",
   "MSA",
 ];
 
 export const mockOrganizations = ["Acme Co.", "Northwind Vendors", "Respira Labs"];
-export const mockLocations = ["Madrid office", "Remote — LatAm"];
-export const mockImportantDates = ["Aug 4, 2026 — Standup", "Sep 1, 2026 — MSA renewal"];
+export const mockLocations = ["Oficina de Madrid", "Remoto — LatAm"];
+export const mockImportantDates = ["4 de agosto de 2026 — Standup", "1 de septiembre de 2026 — Renovación del MSA"];
 
 export const mockQuestions = [
-  "What's the fallback if the vendor won't share their SOC 2 report?",
-  "Do we need per-project retention windows or one global default?",
+  "¿Cuál es el plan alternativo si el proveedor no comparte su informe SOC 2?",
+  "¿Necesitamos ventanas de retención por proyecto o un valor global por defecto?",
 ];
 
 export const mockFacts = [
-  "The vendor's data center is in Frankfurt, not Dublin as previously assumed.",
-  "Current retention window defaults to 90 days across all projects.",
+  "El centro de datos del proveedor está en Fráncfort, no en Dublín como se asumía antes.",
+  "La ventana de retención actual es de 90 días por defecto en todos los proyectos.",
 ];
 
 export const mockQuotes: { text: string; speaker: string }[] = [
-  { text: "We should treat retrieval quality as the whole product, not a feature.", speaker: "Elena Marsh" },
-  { text: "I'd rather renew late than renew without the SOC 2 report.", speaker: "Priya Natarajan" },
+  { text: "Deberíamos tratar la calidad de recuperación como el producto entero, no como una función más.", speaker: "Elena Marsh" },
+  { text: "Prefiero renovar tarde que renovar sin el informe SOC 2.", speaker: "Priya Natarajan" },
 ];
 
-export const mockTags = ["priority", "needs-review", "client-facing", "infra"];
+export const mockTags = ["prioridad", "necesita-revisión", "cara-al-cliente", "infra"];
 
 export type UploadQueueItem = {
   id: string;

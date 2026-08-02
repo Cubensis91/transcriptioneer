@@ -1,11 +1,10 @@
 /**
- * AskService — chat over the knowledge base. Real implementation later hits
- * POST /api/v1/chat (RAG over Chunk embeddings, ARCHITECTURE.md §4/§5).
- * The mock answer is fixed and citation-shaped on purpose, so the message
- * bubble/citation UI never has to change when the real backend lands.
+ * AskService — chat over the knowledge base. Backed by /api/ask (Gemini,
+ * grounded in the mock documents server-side) as a temporary stand-in for
+ * the real RAG pipeline (POST /api/v1/chat over Chunk embeddings,
+ * ARCHITECTURE.md §4/§5). Real citations arrive once that retrieval layer
+ * exists — until then, responses carry no citations rather than fake ones.
  */
-import { mockDocuments } from "@/lib/mock-data";
-
 export type ChatCitation = { documentId: string; documentTitle: string };
 
 export type ChatMessage = {
@@ -19,17 +18,25 @@ export interface AskService {
   ask(question: string): Promise<ChatMessage>;
 }
 
-class MockAskService implements AskService {
+class GeminiAskService implements AskService {
   async ask(question: string): Promise<ChatMessage> {
-    await new Promise((r) => setTimeout(r, 500));
-    const cited = mockDocuments.slice(0, 2);
+    const res = await fetch("/api/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error ?? "No se pudo obtener una respuesta.");
+    }
+
     return {
       id: `a-${Date.now()}`,
       role: "assistant",
-      text: `Based on what you've shared with me, the retrieval pipeline is expected to ship before the knowledge chat surface, and the SOC 2 report is a hard requirement before renewing with Northwind Vendors. I don't have anything more recent than that on "${question}" yet — upload the latest notes and I'll fold them in.`,
-      citations: cited.map((d) => ({ documentId: d.id, documentTitle: d.title })),
+      text: data.text as string,
     };
   }
 }
 
-export const askService: AskService = new MockAskService();
+export const askService: AskService = new GeminiAskService();

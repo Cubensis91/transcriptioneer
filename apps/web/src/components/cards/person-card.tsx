@@ -9,7 +9,7 @@ export function PersonCard({ person }: { person: MockPerson }) {
         <p className="text-sm font-medium text-text">{person.name}</p>
         <p className="text-xs text-text-subtle">{person.role}</p>
       </div>
-      <span className="text-xs text-text-subtle">{person.mentions} mentions</span>
+      <span className="text-xs text-text-subtle">{person.mentions} menciones</span>
     </div>
   );
 }

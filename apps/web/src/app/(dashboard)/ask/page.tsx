@@ -10,9 +10,9 @@ import { TopNav } from "@/components/navigation/top-nav";
 import { type ChatMessage, askService } from "@/lib/services/ask-service";
 
 const starterQuestions = [
-  "What decisions are still waiting on an owner?",
-  "What did Priya say about the SOC 2 report?",
-  "Summarize everything about the Q3 roadmap.",
+  "¿Qué decisiones siguen esperando un responsable?",
+  "¿Qué dijo Priya sobre el informe SOC 2?",
+  "Resume todo sobre la hoja de ruta del Q3.",
 ];
 
 export default function AskPage() {
@@ -25,9 +25,21 @@ export default function AskPage() {
     setMessages((m) => [...m, { id: `u-${Date.now()}`, role: "user", text: question }]);
     setInput("");
     setPending(true);
-    const answer = await askService.ask(question);
-    setMessages((m) => [...m, answer]);
-    setPending(false);
+    try {
+      const answer = await askService.ask(question);
+      setMessages((m) => [...m, answer]);
+    } catch (error) {
+      setMessages((m) => [
+        ...m,
+        {
+          id: `e-${Date.now()}`,
+          role: "assistant",
+          text: error instanceof Error ? error.message : "No se pudo obtener una respuesta.",
+        },
+      ]);
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -39,9 +51,9 @@ export default function AskPage() {
             <div className="flex flex-1 flex-col items-center justify-center gap-4 text-center">
               <ScribeMark animate />
               <div>
-                <h1 className="font-display text-xl font-medium text-text">Ask your scribe</h1>
+                <h1 className="font-display text-xl font-medium text-text">Pregúntale a tu escriba</h1>
                 <p className="mt-1 text-sm text-text-muted">
-                  Answers come from what you&apos;ve actually shared with it — with citations.
+                  Las respuestas vienen de lo que realmente le has compartido, con citas incluidas.
                 </p>
               </div>
               <div className="flex flex-wrap justify-center gap-2">
@@ -114,10 +126,10 @@ export default function AskPage() {
           <Input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask anything about what you've shared…"
-            aria-label="Ask your scribe"
+            placeholder="Pregunta lo que quieras sobre lo que has compartido…"
+            aria-label="Pregúntale a tu escriba"
           />
-          <Button type="submit" size="icon" aria-label="Send" disabled={pending}>
+          <Button type="submit" size="icon" aria-label="Enviar" disabled={pending}>
             <Send className="size-4" aria-hidden />
           </Button>
         </form>

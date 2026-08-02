@@ -11,16 +11,16 @@ import {
 import { Bell } from "lucide-react";
 
 const mockNotifications = [
-  { id: "n-1", text: "Q3 roadmap sync finished transcribing.", time: "5m ago" },
-  { id: "n-2", text: "3 new connections found in Vendor security questionnaire.", time: "1h ago" },
-  { id: "n-3", text: "Priya Natarajan was mentioned in a document you follow.", time: "yesterday" },
+  { id: "n-1", text: "Terminó de transcribirse la sincronización de la hoja de ruta del Q3.", time: "hace 5 min" },
+  { id: "n-2", text: "Se encontraron 3 conexiones nuevas en el cuestionario de seguridad de proveedores.", time: "hace 1 hora" },
+  { id: "n-3", text: "Priya Natarajan fue mencionada en un documento que sigues.", time: "ayer" },
 ];
 
 export function NotificationsButton() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Notifications" className="relative">
+        <Button variant="ghost" size="icon" aria-label="Notificaciones" className="relative">
           <Bell className="size-4" aria-hidden />
           <Badge
             variant="error"

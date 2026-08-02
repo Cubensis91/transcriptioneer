@@ -8,10 +8,10 @@ import { TopNav } from "@/components/navigation/top-nav";
 import { type InsightsSummary, insightsService } from "@/lib/services/insights-service";
 
 const kindMeta: Record<InsightsSummary["surfaced"][number]["kind"], { label: string; icon: typeof Lightbulb }> = {
-  trend: { label: "Trend", icon: TrendingUp },
-  gap: { label: "Gap", icon: ScanSearch },
-  contradiction: { label: "Contradiction", icon: Lightbulb },
-  connection: { label: "Connection", icon: GitBranch },
+  trend: { label: "Tendencia", icon: TrendingUp },
+  gap: { label: "Vacío", icon: ScanSearch },
+  contradiction: { label: "Contradicción", icon: Lightbulb },
+  connection: { label: "Conexión", icon: GitBranch },
 };
 
 export default function InsightsPage() {
@@ -29,8 +29,8 @@ export default function InsightsPage() {
       <main className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 pb-24 sm:px-8 lg:pb-8">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
           <div className="flex flex-col gap-1">
-            <h1 className="font-display text-2xl font-medium text-text">Insights</h1>
-            <p className="text-sm text-text-muted">What your scribe has noticed, without you asking.</p>
+            <h1 className="font-display text-2xl font-medium text-text">Perspectivas</h1>
+            <p className="text-sm text-text-muted">Lo que tu escriba ha notado, sin que se lo pidas.</p>
           </div>
 
           {!summary ? (
@@ -39,10 +39,10 @@ export default function InsightsPage() {
             <>
               <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
                 {[
-                  { label: "Documents processed", value: summary.documentsProcessed },
-                  { label: "Hours transcribed", value: summary.hoursTranscribed },
-                  { label: "Ideas extracted", value: summary.ideasExtracted },
-                  { label: "Connections created", value: summary.connectionsCreated },
+                  { label: "Documentos procesados", value: summary.documentsProcessed },
+                  { label: "Horas transcritas", value: summary.hoursTranscribed },
+                  { label: "Ideas extraídas", value: summary.ideasExtracted },
+                  { label: "Conexiones creadas", value: summary.connectionsCreated },
                 ].map((stat) => (
                   <Card key={stat.label}>
                     <CardContent className="pt-5">
@@ -54,7 +54,7 @@ export default function InsightsPage() {
               </div>
 
               <Card>
-                <PanelChromeHeader title="This week" />
+                <PanelChromeHeader title="Esta semana" />
                 <CardContent className="pt-5">
                   <div className="flex h-32 items-end gap-3">
                     {summary.weekly.map((point) => (
@@ -72,7 +72,7 @@ export default function InsightsPage() {
               </Card>
 
               <div>
-                <h2 className="mb-3 font-display text-lg font-medium text-text">Surfaced for you</h2>
+                <h2 className="mb-3 font-display text-lg font-medium text-text">Destacado para ti</h2>
                 <div className="flex flex-col gap-3">
                   {summary.surfaced.map((insight) => {
                     const meta = kindMeta[insight.kind];

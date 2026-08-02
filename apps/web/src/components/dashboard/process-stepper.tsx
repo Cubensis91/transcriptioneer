@@ -18,14 +18,14 @@ const STEP_STATES: Record<StepKey, FileVisualState[]> = {
 };
 
 const STEP_COPY: Record<StepKey, { label: (kind: "audio" | "document") => string; narrative: (kind: "audio" | "document") => string }> = {
-  receiving: { label: () => "Receiving", narrative: () => "Getting your file ready…" },
+  receiving: { label: () => "Recibiendo", narrative: () => "Preparando tu archivo…" },
   processing: {
-    label: (kind) => (kind === "audio" ? "Listening" : "Note-taking"),
-    narrative: (kind) => (kind === "audio" ? "I'm listening…" : "Taking notes…"),
+    label: (kind) => (kind === "audio" ? "Escuchando" : "Tomando notas"),
+    narrative: (kind) => (kind === "audio" ? "Estoy escuchando…" : "Tomando notas…"),
   },
-  understanding: { label: () => "Understanding", narrative: () => "Making sense of it…" },
-  connecting: { label: () => "Connecting", narrative: () => "Connecting the ideas…" },
-  done: { label: () => "Done", narrative: () => "All set." },
+  understanding: { label: () => "Entendiendo", narrative: () => "Dándole sentido…" },
+  connecting: { label: () => "Conectando", narrative: () => "Conectando las ideas…" },
+  done: { label: () => "Listo", narrative: () => "Todo listo." },
 };
 
 function currentStepIndex(state: FileVisualState): number {
@@ -50,8 +50,8 @@ export function ProcessStepper({
 }) {
   if (currentState === "failed") {
     return (
-      <Alert variant="error" title="Something went wrong" className={className}>
-        We hit a snag partway through — you can retry from where it stopped.
+      <Alert variant="error" title="Algo salió mal" className={className}>
+        Tuvimos un contratiempo a mitad de camino — puedes reintentar desde donde se detuvo.
       </Alert>
     );
   }

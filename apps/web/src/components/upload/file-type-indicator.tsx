@@ -9,7 +9,7 @@ const kindMeta: Record<MockDocument["kind"], { label: string; icon: typeof FileT
   docx: { label: "DOCX", icon: FileText },
   txt: { label: "TXT", icon: FileType },
   md: { label: "Markdown", icon: FileType },
-  image: { label: "Image", icon: FileImage },
+  image: { label: "Imagen", icon: FileImage },
 };
 
 export function FileTypeIndicator({ kind, className }: { kind: MockDocument["kind"]; className?: string }) {

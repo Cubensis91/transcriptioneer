@@ -21,7 +21,7 @@ export function DocumentCard({ document }: { document: MockDocument }) {
       </CardHeader>
       <CardContent className="flex flex-col gap-3">
         <p className="text-sm text-text-muted">
-          {document.summary || "Summary will appear once processing completes."}
+          {document.summary || "El resumen aparecerá cuando termine el procesamiento."}
         </p>
         <Badge variant="accent" className="w-fit">
           {document.project}

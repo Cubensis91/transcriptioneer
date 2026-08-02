@@ -33,14 +33,14 @@ export function UploadDropzone() {
       </div>
       <div className="flex flex-col gap-1">
         <p className="font-display text-base font-medium text-text">
-          Bring me audio or documents
+          Tráeme audio o documentos
         </p>
         <p className="text-sm text-text-muted">
-          MP3, WAV, M4A, AAC, MP4, PDF, DOCX, TXT, Markdown, or images — up to 25 files at once.
+          MP3, WAV, M4A, AAC, MP4, PDF, DOCX, TXT, Markdown o imágenes — hasta 25 archivos a la vez.
         </p>
       </div>
       <Button variant="secondary" size="sm" type="button">
-        Browse files
+        Explorar archivos
       </Button>
     </div>
   );

@@ -11,7 +11,7 @@ export function MobileNav({ className }: { className?: string }) {
 
   return (
     <nav
-      aria-label="Primary"
+      aria-label="Principal"
       className={cn(
         "flex w-full items-center justify-between border-t border-border bg-surface px-2 py-2 shadow-[0_-1px_0_0_var(--color-border)]",
         "bg-[image:var(--surface-gradient-raised)] ring-1 ring-inset ring-[var(--ring-inset)]",

@@ -4,16 +4,16 @@ import { PanelChromeHeader } from "@/components/chrome/panel-chrome-header";
 import { mockDecisions, mockFacts, mockTasks, mockTopics } from "@/lib/mock-data";
 
 const stats = [
-  { label: "ideas found", value: mockFacts.length, icon: Lightbulb },
-  { label: "decisions", value: mockDecisions.length, icon: CheckCircle2 },
-  { label: "connections", value: mockTopics.length, icon: Link2 },
-  { label: "tasks suggested", value: mockTasks.filter((task) => !task.done).length, icon: ListTodo },
+  { label: "ideas encontradas", value: mockFacts.length, icon: Lightbulb },
+  { label: "decisiones", value: mockDecisions.length, icon: CheckCircle2 },
+  { label: "conexiones", value: mockTopics.length, icon: Link2 },
+  { label: "tareas sugeridas", value: mockTasks.filter((task) => !task.done).length, icon: ListTodo },
 ];
 
 export function QuickInsightsPanel({ className }: { className?: string }) {
   return (
     <Card className={cn("overflow-hidden", className)}>
-      <PanelChromeHeader title="Quick insights" />
+      <PanelChromeHeader title="Perspectivas rápidas" />
       <CardContent className="grid grid-cols-2 gap-3 pt-5">
         {stats.map(({ label, value, icon: Icon }) => (
           <div

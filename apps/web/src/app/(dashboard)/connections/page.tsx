@@ -12,14 +12,14 @@ export default function ConnectionsPage() {
       <main className="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 pb-24 sm:px-8 lg:pb-8">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
           <div className="flex flex-col gap-1">
-            <h1 className="font-display text-2xl font-medium text-text">Connections</h1>
+            <h1 className="font-display text-2xl font-medium text-text">Conexiones</h1>
             <p className="text-sm text-text-muted">
-              How the people, topics, and organizations in your knowledge base relate.
+              Cómo se relacionan las personas, los temas y las organizaciones de tu base de conocimiento.
             </p>
           </div>
 
           <Card>
-            <PanelChromeHeader title="Graph" />
+            <PanelChromeHeader title="Grafo" />
             <CardContent className="pt-5">
               <EmptyState
                 icon={<Waypoints className="size-8" aria-hidden />}

@@ -14,10 +14,10 @@ import { mockDocuments, mockPeople } from "@/lib/mock-data";
 export function SearchInterface() {
   return (
     <Command className="w-full max-w-md rounded-lg border border-border shadow-sm">
-      <CommandInput placeholder="Search documents, people, topics…" />
+      <CommandInput placeholder="Buscar documentos, personas, temas…" />
       <CommandList>
-        <CommandEmpty>No results found.</CommandEmpty>
-        <CommandGroup heading="Documents">
+        <CommandEmpty>No se encontraron resultados.</CommandEmpty>
+        <CommandGroup heading="Documentos">
           {mockDocuments.slice(0, 2).map((doc) => (
             <CommandItem key={doc.id}>
               {doc.kind === "audio" ? (
@@ -29,7 +29,7 @@ export function SearchInterface() {
             </CommandItem>
           ))}
         </CommandGroup>
-        <CommandGroup heading="People">
+        <CommandGroup heading="Personas">
           {mockPeople.slice(0, 2).map((person) => (
             <CommandItem key={person.name}>
               <User className="size-4 text-text-subtle" aria-hidden />

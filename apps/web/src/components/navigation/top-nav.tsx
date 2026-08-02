@@ -26,7 +26,7 @@ export function TopNav({ className }: { className?: string }) {
       )}
     >
       <div className="max-w-md flex-1">
-        <SearchInput placeholder="Search your knowledge base…" aria-label="Search" />
+        <SearchInput placeholder="Busca en tu base de conocimiento…" aria-label="Buscar" />
       </div>
       <div className="ml-auto flex items-center gap-2">
         <NotificationsButton />
