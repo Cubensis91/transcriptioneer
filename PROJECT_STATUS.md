@@ -10,7 +10,9 @@ MILESTONE 0 — ARCHITECTURE / PRODUCT PHILOSOPHY — COMPLETE
 MILESTONE 1 — PROJECT FOUNDATION — COMPLETE
 MILESTONE 2 — DESIGN SYSTEM + DESIGN LAB — COMPLETE
 MILESTONE 2.5 — VISUAL/PRODUCT REFINEMENT — COMPLETE (2026-07-29)
-MILESTONE 3 — AUTHENTICATION — IN PROGRESS (started 2026-07-29): schema only
+MILESTONE 3 — AUTHENTICATION — IN PROGRESS (started 2026-07-29): schema +
+  API auth module done, OAuth stubs + web screens + live-DB verification
+  remain (updated 2026-08-04)
 ```
 
 Milestone 2.5 is done: the founder resolved its one open question
@@ -107,13 +109,37 @@ against both, not just against technical completeness.
   available.
 - `packages/types` gained `OrgRole`/`User`/`Organization`/`AuthSession`/
   `AuthenticatedUser`; `packages/validation` gained `registerSchema`/
-  `loginSchema` (commit `dbea1ae`) — both typecheck clean, but neither is
-  consumed anywhere yet.
-- Nothing else in `MILESTONE_3_AUTH.md`'s scope exists yet: `apps/api/src`
-  still only has `health/` and `config/` — no auth module, controller,
-  guard, Argon2 hashing, JWT/refresh-token issuance, or
-  `@nestjs/throttler` rate limiting. No web login/register screens.
-- Estimated completion: ~10–15% of the milestone's 11-item scope.
+  `loginSchema` (commit `dbea1ae`) — now actually consumed by the auth module
+  below (previously typechecked clean but unused).
+- **New 2026-08-04:** the `/api/v1/auth` module itself is built —
+  `apps/api/src/auth/` (`auth.controller.ts`, `auth.service.ts`,
+  `jwt.strategy.ts`, `jwt-auth.guard.ts`, `pipes/zod-validation.pipe.ts`).
+  `register`/`login`/`refresh`/`logout` plus `GET /me` and
+  `GET /organizations/:id` (the latter added to prove repository-layer org
+  scoping). Argon2id password hashing; JWT access token (separate secret
+  from refresh, both configurable via new `JWT_ACCESS_SECRET`/
+  `JWT_REFRESH_SECRET`/`JWT_ACCESS_TTL_SECONDS`/`JWT_REFRESH_TTL_DAYS` env
+  vars — see `.env.example`) delivered as an httpOnly cookie; refresh token
+  is an opaque random value stored only as a SHA-256 hash, with
+  rotation-with-reuse-detection actually implemented (reusing an
+  already-rotated token revokes every live token for that user).
+  `@nestjs/throttler` limits `register`/`login`/`refresh` to 5/min (global
+  default elsewhere is 100/min). Tests: `auth.service.spec.ts` (register,
+  login, refresh/rotation/reuse-detection, logout, cross-org rejection — 13
+  tests) and `auth.security.spec.ts` (guard behavior + rate-limit 429 over
+  real HTTP via supertest — 4 tests), all 17 passing against a **mocked**
+  Prisma client (no live Postgres available, same constraint as the
+  migration above). `pnpm turbo run typecheck lint test` green for
+  `apps/api`. See `MILESTONE_3_AUTH.md` for the full item-by-item detail and
+  updated acceptance-criteria checkboxes.
+- **Not yet done:** OAuth stubs for Google/Apple/Microsoft (deliberately
+  deferred — founder decision 2026-08-04 to finish email+password auth
+  completely first), web login/register screens (`apps/web` — sequenced
+  last per `MILESTONE_3_AUTH.md`'s own ordering), and verifying any of the
+  above against a **live** database.
+- Estimated completion: ~70–75% of the milestone's 11-item scope (up from
+  ~10–15%) — the remaining ~25-30% is OAuth stubs, web screens, and live-DB
+  verification, not more backend logic.
 
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
@@ -265,9 +291,13 @@ above. Remaining: the NestJS auth module itself.
    verification~~ — **done 2026-08-01 on the VPS**, see above.
 2. Re-run `pnpm turbo run build typecheck lint test` to confirm the repo is
    still green after any environment changes since this session.
-3. Continue Milestone 3 per `MILESTONE_3_AUTH.md`: the auth module in
+3. ~~Continue Milestone 3 per `MILESTONE_3_AUTH.md`: the auth module in
    `apps/api` (`/api/v1/auth` register/login/refresh/logout, Argon2id
    password hashing, JWT access + rotating refresh tokens, guards with
    org/user scoping, `@nestjs/throttler` rate limiting, and the tests listed
    in that document's acceptance criteria), before touching any web UI for
-   login/register.
+   login/register.~~ — **done 2026-08-04** (unit-tested against a mocked
+   Prisma client). Remaining for Milestone 3: OAuth stubs, web login/
+   register screens, and re-running the acceptance criteria against a
+   **live** database once one is available (this sandbox still has no
+   Docker/Postgres — see "Known pending infrastructure verification").

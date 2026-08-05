@@ -1,7 +1,10 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { APP_GUARD } from "@nestjs/core";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { validateEnv } from "./config/env.validation";
 import { HealthModule } from "./health/health.module";
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [
@@ -9,7 +12,12 @@ import { HealthModule } from "./health/health.module";
       isGlobal: true,
       validate: validateEnv,
     }),
+    // Generous global default; auth endpoints override it with a much
+    // stricter per-route limit via @Throttle (see auth.controller.ts).
+    ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 100 }]),
     HealthModule,
+    AuthModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}
