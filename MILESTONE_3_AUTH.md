@@ -134,43 +134,68 @@ and/or organization per §7.
 
 - [x] `pnpm --filter @transcriptioneer/database db:generate` succeeds
       (verified 2026-07-29).
-- [ ] Prisma migration applies cleanly against a **live** database
+- [x] Prisma migration applies cleanly against a **live** database
       (`User`/`Organization`/`OrganizationMember` created, `HealthCheck`
-      removed) — not yet run; no live Postgres available in this sandbox.
+      removed). Already true as of the 2026-08-01 infrastructure
+      verification (`PROJECT_STATUS.md`) — re-confirmed 2026-08-05:
+      `prisma migrate deploy` reported "No pending migrations to apply,"
+      and `\dt` on the live Postgres shows `User`/`Organization`/
+      `OrganizationMember`/`RefreshToken`/`_prisma_migrations`.
 - [x] `POST /api/v1/auth/register` creates `User` + `Organization` +
       `OrganizationMember` (role `OWNER`) in one transaction; duplicate
-      email rejected with a clear, non-leaky error. Verified against a
-      mocked Prisma client, not yet a live database.
+      email rejected with a clear, non-leaky error. Verified twice: unit
+      tests against a mocked Prisma client, and live via `curl` against the
+      real VPS database (2026-08-05) — row created, then deleted as
+      cleanup (this was a manual smoke test, not seed data).
 - [x] `POST /api/v1/auth/login` returns access + refresh tokens for valid
       credentials; rejects invalid credentials without revealing which
-      field was wrong. Same caveat as above.
+      field was wrong. Live-verified: correct login succeeded, wrong
+      password returned 401.
 - [x] `POST /api/v1/auth/refresh` rotates the refresh token (old one
       invalidated) and issues a new access token. Reuse of a rotated token
-      additionally revokes the whole chain (reuse/theft detection) — a test
-      proves this, not just the base rotation case.
-- [x] `POST /api/v1/auth/logout` invalidates the refresh token.
+      additionally revokes the whole chain (reuse/theft detection). Live-
+      verified for the base rotation case; reuse-detection verified only
+      in the mocked unit test so far, not against the live DB.
+- [x] `POST /api/v1/auth/logout` invalidates the refresh token. Live-
+      verified: refresh after logout returned 401.
 - [x] A protected route confirms the guard rejects unauthenticated requests
-      and accepts valid ones. `auth.security.spec.ts` runs this over real
-      HTTP (supertest), not just calling the guard function directly.
+      and accepts valid ones. Live-verified: `GET /me` returned 200 with a
+      valid cookie, 401 with none.
 - [x] A test proves cross-org access is actually rejected at the repository
-      layer, not just configured. `GET /api/v1/auth/organizations/:id`
-      exists specifically to exercise this; `getOrganizationForUser`'s query
-      itself excludes non-member orgs rather than fetching then checking.
+      layer, not just configured. Live-verified: a second registered user
+      (different org) got 403 from `GET /organizations/:id` on the first
+      user's org.
 - [x] A test proves rate limiting actually triggers on repeated auth
       requests, not just configured. `auth.security.spec.ts` fires 6 rapid
-      requests at `/login` (limit 5/min) and asserts a 429 appears.
-- [ ] `GET /health` still returns correctly after the migration (raw
-      `SELECT 1`, unaffected by schema changes — confirm, don't assume).
-      Blocked on the same live-database step as the migration item above.
+      requests at `/login` (limit 5/min) and asserts a 429 appears
+      (unit-tested only; not re-verified live to avoid hammering
+      production).
+- [x] `GET /health` still returns correctly after the migration (raw
+      `SELECT 1`, unaffected by schema changes). Confirmed live:
+      `{"status":"ok",...}`.
 - [x] `pnpm turbo run typecheck lint test` green, full monorepo — for
       `apps/api` specifically; **note:** `@transcriptioneer/web`'s own test
       suite currently fails independently of this work (`(dashboard)/
       page.test.tsx` expects English copy, the app was translated to
       Spanish in the prior session) — confirmed pre-existing via `git
-      stash`, unrelated to auth. `build` not re-run this session (no
-      Turbopack fix applied; see `PROJECT_STATUS.md`'s known technical debt).
+      stash`, unrelated to auth. `build` not re-run in the sandbox this
+      session (no Turbopack fix applied there), but the VPS's own
+      `nest build` for `apps/api` succeeded cleanly as part of deployment.
 - [ ] Web login/register screens work against the real API (not mocked),
       styled per the committed design system.
+
+### Live verification (2026-08-05, on the production VPS)
+
+Deployed to `93.127.211.218` (`app.transcriptioneer.online`): pushed
+`4f62e25` to `origin/master`, pulled on the VPS, `pnpm install` (argon2
+compiled natively without issue), added `JWT_ACCESS_SECRET`/
+`JWT_REFRESH_SECRET`/TTL vars to `apps/api/.env`, rebuilt (`nest build`),
+restarted the `transcriptioneer-api` PM2 process. Exercised the full flow
+with `curl` against the real API + real Postgres (not mocks): register →
+`/me` → login → wrong-password rejection → refresh (rotation) → logout →
+refresh-after-logout rejection → unauthenticated `/me` rejection →
+cross-org 403. All behaved as expected. Test rows (2 users, 2 orgs) were
+deleted afterward — production database has no leftover test data.
 
 ### Deferred (environment- or account-blocked, not code-blocked)
 

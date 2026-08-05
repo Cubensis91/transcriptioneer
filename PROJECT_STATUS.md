@@ -132,14 +132,24 @@ against both, not just against technical completeness.
   migration above). `pnpm turbo run typecheck lint test` green for
   `apps/api`. See `MILESTONE_3_AUTH.md` for the full item-by-item detail and
   updated acceptance-criteria checkboxes.
+- **Update 2026-08-05: deployed and live-verified on the production VPS.**
+  Pushed to `origin/master` (`4f62e25`), pulled/built/deployed on
+  `93.127.211.218`, added the new JWT env vars to `apps/api/.env`, restarted
+  the `transcriptioneer-api` PM2 process. `prisma migrate deploy` confirmed
+  the auth migration was already live (from the 2026-08-01 verification —
+  "No pending migrations to apply"). Exercised the entire flow with `curl`
+  against the real API and real Postgres: register, `/me`, login (incl.
+  wrong-password 401), refresh rotation, logout, refresh-after-logout 401,
+  unauthenticated 401, and cross-org 403 — all correct. Test rows cleaned
+  up afterward. See `MILESTONE_3_AUTH.md`'s "Live verification" section and
+  updated acceptance-criteria checkboxes (now all checked except the web
+  screens and OAuth stubs).
 - **Not yet done:** OAuth stubs for Google/Apple/Microsoft (deliberately
   deferred — founder decision 2026-08-04 to finish email+password auth
-  completely first), web login/register screens (`apps/web` — sequenced
-  last per `MILESTONE_3_AUTH.md`'s own ordering), and verifying any of the
-  above against a **live** database.
-- Estimated completion: ~70–75% of the milestone's 11-item scope (up from
-  ~10–15%) — the remaining ~25-30% is OAuth stubs, web screens, and live-DB
-  verification, not more backend logic.
+  completely first) and web login/register screens (`apps/web` — sequenced
+  last per `MILESTONE_3_AUTH.md`'s own ordering).
+- Estimated completion: ~85–90% of the milestone's 11-item scope (up from
+  ~10–15%) — the remaining ~10-15% is OAuth stubs and web screens.
 
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
