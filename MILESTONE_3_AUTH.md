@@ -223,11 +223,28 @@ deleted afterward — production database has no leftover test data.
   constraint carried from Milestone 1/2). The migration above must be run
   and verified against a live Postgres in a Docker-capable environment
   before this milestone can be marked closed.
-- **Real OAuth provider credentials** — registering actual Google/Apple/
-  Microsoft OAuth apps requires a real (or at least stable staging) callback
-  URL and provider-side account setup, which isn't a coding task and doesn't
-  block writing the strategy-pattern scaffolding now. Google's scaffolding
-  is done (2026-08-05, see above) and ready for `GOOGLE_CLIENT_ID`/
-  `GOOGLE_CLIENT_SECRET`/`GOOGLE_CALLBACK_URL` — `app.transcriptioneer.online`
-  is a stable callback URL now, so this is just an account-setup task
-  (register the app at console.cloud.google.com), not a coding one.
+- ~~**Real OAuth provider credentials**~~ — **done for Google, 2026-08-05.**
+  A real OAuth client was registered at console.cloud.google.com (consent
+  screen in "Testing" mode — only emails added as test users can sign in
+  until it's published) with redirect URI
+  `https://app.transcriptioneer.online/api/v1/auth/google/callback`.
+  Deployed the client ID/secret to the VPS `.env` and confirmed
+  `GET /api/v1/auth/google` now returns a real `302` to
+  `accounts.google.com` with the correct `client_id`/`redirect_uri` —
+  not yet walked through the full consent-screen-to-callback flow with a
+  real browser session (that's the next thing to try). Apple/Microsoft
+  remain deferred — no strategies built for them yet.
+
+**Bug found and fixed during this deploy (2026-08-05):** `AuthModule` was
+deciding whether to register `GoogleStrategy` by reading `process.env`
+directly at module-file-evaluation time — but `auth.module.ts` is required
+(via `AppModule`'s own import chain) *before* `ConfigModule.forRoot()`
+(also inside `AppModule`) actually loads `.env`, so the check always saw
+`undefined` regardless of real configuration, and `GET /google` failed with
+`Unknown authentication strategy "google"` even with correct credentials
+set. Fixed by always registering `GoogleStrategy` (with inert placeholder
+values when unconfigured) and moving the actual configuration check into
+`GoogleAuthGuard`, which runs at request time via `ConfigService` — after
+Nest has genuinely finished loading config. Worth remembering for any
+future conditionally-registered Nest provider: module-file-level
+`process.env` checks run earlier than you'd expect.

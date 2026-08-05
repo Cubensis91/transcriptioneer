@@ -159,10 +159,25 @@ against both, not just against technical completeness.
   unit-tested (new-account creation, repeat sign-in, linking to an
   existing password account by email) but not yet exercised against the
   real Google consent screen.
+- **Update 2026-08-05 (later still): real Google OAuth credentials live.**
+  Registered a real OAuth client at console.cloud.google.com (redirect URI
+  `https://app.transcriptioneer.online/api/v1/auth/google/callback`,
+  consent screen in "Testing" mode) and deployed the client ID/secret to
+  the VPS. Along the way, found and fixed a real bug: `AuthModule` checked
+  `process.env.GOOGLE_CLIENT_ID` at module-file-evaluation time, which runs
+  before `ConfigModule.forRoot()` loads `.env` — so it never saw the
+  credentials and `GET /google` failed with "Unknown authentication
+  strategy" even when correctly configured. Fixed by always registering
+  `GoogleStrategy` and moving the real check into `GoogleAuthGuard` (via
+  `ConfigService`, at request time). Confirmed live: `GET
+  /api/v1/auth/google` now returns a real `302` to `accounts.google.com`
+  with the correct `client_id`/`redirect_uri`. See `MILESTONE_3_AUTH.md`
+  for the full bug writeup. Not yet walked through the full consent-to-
+  callback flow with a real browser session.
 - **Not yet done:** Apple/Microsoft OAuth stubs (same pattern as Google,
   just not built), web login/register screens (`apps/web` — sequenced
-  last per `MILESTONE_3_AUTH.md`'s own ordering), and registering a real
-  Google OAuth app.
+  last per `MILESTONE_3_AUTH.md`'s own ordering), and the actual
+  browser-based Google sign-in walkthrough.
 - Estimated completion: ~90% of the milestone's 11-item scope — the
   remaining ~10% is web screens (Apple/Microsoft OAuth stubs are a
   nice-to-have, not blocking; item 11 is the only hard remaining item).
