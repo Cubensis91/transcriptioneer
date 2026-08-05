@@ -10,10 +10,12 @@ MILESTONE 0 — ARCHITECTURE / PRODUCT PHILOSOPHY — COMPLETE
 MILESTONE 1 — PROJECT FOUNDATION — COMPLETE
 MILESTONE 2 — DESIGN SYSTEM + DESIGN LAB — COMPLETE
 MILESTONE 2.5 — VISUAL/PRODUCT REFINEMENT — COMPLETE (2026-07-29)
-MILESTONE 3 — AUTHENTICATION — IN PROGRESS (started 2026-07-29): schema,
-  API auth module, Google OAuth stub (real credentials live), and web
-  login/register screens all done; Apple/Microsoft OAuth + route
-  protection remain (updated 2026-08-05)
+MILESTONE 3 — AUTHENTICATION — CORE SCOPE COMPLETE, VERIFIED LIVE
+  (started 2026-07-29, verified end-to-end 2026-08-05): schema, API auth
+  module, Google OAuth, and web login/register screens all done and
+  confirmed working against the real production API/database/domain.
+  Apple/Microsoft OAuth stubs and (dashboard) route protection remain,
+  both explicitly deferred, non-blocking.
 ```
 
 Milestone 2.5 is done: the founder resolved its one open question
@@ -201,16 +203,41 @@ against both, not just against technical completeness.
   `apps/web`, not just the two new ones. `typecheck`/`lint` clean; tests
   green except the same pre-existing, unrelated stale-copy failure in
   `(dashboard)/page.test.tsx`. See `MILESTONE_3_AUTH.md` for full detail.
+- **Update 2026-08-05 (same day, final): `apps/web` deployed to production
+  and the full flow verified end-to-end against the real API and real
+  database.** This required actually standing up the web app on the VPS
+  for the first time — previously only `apps/api` ran there
+  (`app.transcriptioneer.online` proxied straight to it). Now: `next build`
+  + `next start -p 3001` under PM2 (`transcriptioneer-web`, `pm2 save`d so
+  it survives reboot), and `/etc/caddy/Caddyfile` rewritten to route
+  `/api/*` and `/health` to the API (port 4000) and everything else to the
+  web app (port 3001) — same origin, so the httpOnly session cookies work
+  correctly (they wouldn't across two different domains/ports under
+  `SameSite=Lax`, which is why this was worth doing properly rather than
+  pointing a local dev server at the VPS API). Also fixed
+  `NEXT_PUBLIC_API_URL`, which had `/api` appended in the VPS `.env.local`
+  from an earlier session — harmless while unused, but would have doubled
+  the prefix on every auth call; set to `""` for same-origin relative
+  paths. Verified live in a real browser against
+  `https://app.transcriptioneer.online`: register → real `User`/
+  `Organization` rows created → cookie set → redirected to the dashboard;
+  session survives a full page reload (`GET /me` succeeds); login with
+  the wrong password shows a real error (see the exception-filter bug
+  above); login with the right password succeeds; logout invalidates the
+  session (`refresh` afterward returns 401). Test account deleted
+  afterward — no leftover data in production. Google's "Continuar con
+  Google" link confirmed still redirecting correctly post-deploy.
 - **Not yet done:** Apple/Microsoft OAuth stubs (same pattern as Google,
   just not built), route protection on `(dashboard)` (no auth guard exists
   there yet — intentionally out of scope, see `MILESTONE_3_AUTH.md`), and
-  an end-to-end walkthrough of both the password and Google flows against
-  a running backend (this sandbox has none; next step is trying it against
-  the VPS or a local API instance).
-- Estimated completion: ~98% of the milestone's 11-item scope — all 11
-  items have real, working code; what's left is end-to-end verification
-  and the two explicitly-deferred, non-blocking extras (Apple/Microsoft,
-  route protection).
+  walking the real Google consent screen with an actual Google account
+  (requires the founder's own interactive login — not something that can
+  be automated).
+- Estimated completion: **Milestone 3's core scope is done and verified
+  live end-to-end.** What remains is genuinely optional/deferred:
+  Apple/Microsoft OAuth stubs and `(dashboard)` route protection (both
+  explicitly out of scope for this pass), plus the founder personally
+  clicking through the Google consent screen once to see it end-to-end.
 
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
@@ -234,11 +261,13 @@ future unification decision.
 
 - Monorepo tooling: install, build, typecheck, lint, test, dev — all verified green (`pnpm turbo run build typecheck lint test`, 32/32 tasks, reproduced from a clean cache).
 - Web app boots, API boots, `/health` endpoint, design token system, component library, Design Lab route, and now a real committed homepage at `/` (see Milestone 2.5 above).
+- **`apps/web` is deployed to production** (2026-08-05) — `https://app.transcriptioneer.online` serves the real Next.js build (PM2, `pm2 save`d) with Caddy routing `/api/*`/`/health` to `apps/api` and everything else to it, same origin (needed for the auth cookies to work at all — see Milestone 3 below).
 - `packageManager` pin corrected to `pnpm@9.15.9` (matches `pnpm-lock.yaml`'s `lockfileVersion: '9.0'` and the Node 20 pinned by `.nvmrc`/README) — it was previously pinned to `pnpm@11.17.0`, which requires Node ≥22.13 and fails immediately under corepack on Node 20.
 
 ## Intentionally not implemented yet
 
-- Authentication (Milestone 3) — in progress, schema only; see above
+- ~~Authentication (Milestone 3) — in progress, schema only~~ — **core
+  scope done and verified live end-to-end 2026-08-05**; see above
 - File uploads (Milestone 4)
 - Audio transcription (Milestone 5)
 - AI analysis / OpenAI integration (Milestone 5/6)
@@ -346,15 +375,18 @@ curl http://localhost:4000/health   # expect "status":"ok", not "degraded"
 ## Next milestone
 
 ```
-MILESTONE 3 — AUTHENTICATION (in progress — schema landed, API/web work remaining)
+MILESTONE 4 — FILE UPLOADS
 ```
 
-Per the product roadmap (`ARCHITECTURE.md` §12): secure email/password
-authentication, protected routes, user sessions, OAuth-ready architecture
-(Google/Apple/Microsoft stubs). The Prisma schema step (`User`, `Organization`,
-`OrganizationMember`, `RefreshToken`, replacing the Milestone 1 `HealthCheck`
-placeholder) is committed — see "Milestone 3 — Authentication (in progress)"
-above. Remaining: the NestJS auth module itself.
+Milestone 3's core scope (schema, API auth module, Google OAuth, web
+login/register) is done and verified live end-to-end against production —
+see "Milestone 3 — Authentication" above. What remains of Milestone 3 is
+optional/deferred (Apple/Microsoft OAuth stubs, `(dashboard)` route
+protection) and doesn't block starting Milestone 4. Per the product
+roadmap (`ARCHITECTURE.md` §12/§4): presigned-URL upload flow, `SourceFile`/
+`ProcessingJob` Prisma models (the next real additions to the
+knowledge-graph schema beyond auth), and wiring `IntakeThreshold`'s file
+picker to an actual backend for the first time (currently mock-only).
 
 ## Exact recommended first task when development resumes
 
@@ -362,13 +394,12 @@ above. Remaining: the NestJS auth module itself.
    verification~~ — **done 2026-08-01 on the VPS**, see above.
 2. Re-run `pnpm turbo run build typecheck lint test` to confirm the repo is
    still green after any environment changes since this session.
-3. ~~Continue Milestone 3 per `MILESTONE_3_AUTH.md`: the auth module in
-   `apps/api` (`/api/v1/auth` register/login/refresh/logout, Argon2id
-   password hashing, JWT access + rotating refresh tokens, guards with
-   org/user scoping, `@nestjs/throttler` rate limiting, and the tests listed
-   in that document's acceptance criteria), before touching any web UI for
-   login/register.~~ — **done 2026-08-04** (unit-tested against a mocked
-   Prisma client). Remaining for Milestone 3: OAuth stubs, web login/
-   register screens, and re-running the acceptance criteria against a
-   **live** database once one is available (this sandbox still has no
-   Docker/Postgres — see "Known pending infrastructure verification").
+3. ~~Continue Milestone 3~~ — **done 2026-08-05**, verified live end-to-end
+   against production (see above). If picking Milestone 3 back up anyway:
+   Apple/Microsoft OAuth stubs (same pattern as Google) and `(dashboard)`
+   route protection are the only remaining, non-blocking items.
+4. Start Milestone 4 (file uploads) per `ARCHITECTURE.md` §4/§5: `SourceFile`
+   Prisma model + migration, presigned-URL upload endpoint (MinIO is
+   already provisioned in `docker-compose.yml` and, per the 2026-08-01
+   infrastructure verification, running on the VPS), and wiring
+   `IntakeThreshold`'s file picker to it for the first time.
