@@ -16,6 +16,7 @@ jest.mock("@transcriptioneer/database", () => {
     user: { findUnique: jest.fn(), create: jest.fn() },
     organization: { create: jest.fn(), findFirst: jest.fn() },
     organizationMember: { create: jest.fn() },
+    oAuthAccount: { findUnique: jest.fn(), create: jest.fn() },
     refreshToken: {
       create: jest.fn(),
       findUnique: jest.fn(),
@@ -51,11 +52,18 @@ type FakeRefreshToken = {
   revokedAt: Date | null;
   replacedByTokenId: string | null;
 };
+type FakeOAuthAccount = {
+  id: string;
+  provider: "GOOGLE" | "APPLE" | "MICROSOFT";
+  providerAccountId: string;
+  userId: string;
+};
 
 let users: FakeUser[];
 let orgs: FakeOrg[];
 let memberships: FakeMembership[];
 let refreshTokens: FakeRefreshToken[];
+let oauthAccounts: FakeOAuthAccount[];
 let idCounter: number;
 
 function nextId(): string {
@@ -109,6 +117,19 @@ function wireMockPrisma(): void {
     const membership: FakeMembership = { ...data };
     memberships.push(membership);
     return Promise.resolve(membershipWithOrg(membership));
+  });
+
+  p.oAuthAccount.findUnique.mockImplementation(({ where }: any) => {
+    const key = where.provider_providerAccountId;
+    const account = oauthAccounts.find(
+      (a) => a.provider === key.provider && a.providerAccountId === key.providerAccountId,
+    );
+    return Promise.resolve(account ?? null);
+  });
+  p.oAuthAccount.create.mockImplementation(({ data }: any) => {
+    const account: FakeOAuthAccount = { id: nextId(), ...data };
+    oauthAccounts.push(account);
+    return Promise.resolve(account);
   });
 
   p.refreshToken.create.mockImplementation(({ data }: any) => {
@@ -167,6 +188,7 @@ describe("AuthService", () => {
     orgs = [];
     memberships = [];
     refreshTokens = [];
+    oauthAccounts = [];
     idCounter = 0;
     jest.clearAllMocks();
     wireMockPrisma();
@@ -348,6 +370,69 @@ describe("AuthService", () => {
       await expect(
         service.getOrganizationForUser(userAAuthenticated, orgB.session.organization.id),
       ).rejects.toThrow(ForbiddenException);
+    });
+  });
+
+  describe("loginOrRegisterWithOAuth", () => {
+    it("creates a new user, workspace, and OAuth account on first sign-in", async () => {
+      const result = await service.loginOrRegisterWithOAuth({
+        provider: "GOOGLE",
+        providerAccountId: "google-123",
+        email: "newvia.google@example.com",
+        name: "Google User",
+      });
+
+      expect(result.session.user.email).toBe("newvia.google@example.com");
+      expect(result.session.organization.name).toBe("Google User's Workspace");
+      expect(result.session.role).toBe("OWNER");
+      expect(users[0].passwordHash).toBeNull();
+      expect(oauthAccounts).toHaveLength(1);
+      expect(oauthAccounts[0]).toMatchObject({
+        provider: "GOOGLE",
+        providerAccountId: "google-123",
+      });
+    });
+
+    it("returns the same account on a second sign-in with the same provider id", async () => {
+      const first = await service.loginOrRegisterWithOAuth({
+        provider: "GOOGLE",
+        providerAccountId: "google-456",
+        email: "repeat@example.com",
+        name: "Repeat User",
+      });
+
+      const second = await service.loginOrRegisterWithOAuth({
+        provider: "GOOGLE",
+        providerAccountId: "google-456",
+        email: "repeat@example.com",
+        name: "Repeat User",
+      });
+
+      expect(second.session.user.id).toBe(first.session.user.id);
+      expect(oauthAccounts).toHaveLength(1);
+    });
+
+    it("links to an existing password account when the email already matches", async () => {
+      const passwordAccount = await service.register({
+        email: "linkme@example.com",
+        password: "correcthorse1",
+        name: "Link Me",
+        organizationName: "Existing Org",
+      });
+
+      const linked = await service.loginOrRegisterWithOAuth({
+        provider: "GOOGLE",
+        providerAccountId: "google-789",
+        email: "linkme@example.com",
+        name: "Link Me",
+      });
+
+      expect(linked.session.user.id).toBe(passwordAccount.session.user.id);
+      expect(linked.session.organization.id).toBe(passwordAccount.session.organization.id);
+      // No second user/org was created — the OAuth account attached to the
+      // existing one instead.
+      expect(users).toHaveLength(1);
+      expect(oauthAccounts).toHaveLength(1);
     });
   });
 });

@@ -24,6 +24,8 @@ import type {
 } from "@transcriptioneer/types";
 import { AuthService, type IssuedTokens } from "./auth.service";
 import { CurrentUser } from "./current-user.decorator";
+import { GoogleAuthGuard } from "./google-auth.guard";
+import type { GoogleOAuthPayload } from "./google.strategy";
 import { JwtAuthGuard } from "./jwt-auth.guard";
 import { ZodValidationPipe } from "./pipes/zod-validation.pipe";
 import type { Env } from "../config/env.validation";
@@ -91,6 +93,30 @@ export class AuthController {
     }
     this.clearAuthCookies(res);
     return { success: true, data: null };
+  }
+
+  @Get("google")
+  @UseGuards(GoogleAuthGuard)
+  googleLogin(): void {
+    // GoogleAuthGuard redirects to Google's consent screen; unreachable
+    // when the guard runs (throws 501, or Passport handles the redirect).
+  }
+
+  @Get("google/callback")
+  @UseGuards(GoogleAuthGuard)
+  async googleCallback(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<ApiResponse<AuthSession>> {
+    const profile = req.user as GoogleOAuthPayload;
+    const { session, tokens } = await this.authService.loginOrRegisterWithOAuth({
+      provider: "GOOGLE",
+      providerAccountId: profile.providerAccountId,
+      email: profile.email,
+      name: profile.name,
+    });
+    this.setAuthCookies(res, tokens);
+    return { success: true, data: session };
   }
 
   @Get("me")

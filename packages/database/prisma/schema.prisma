@@ -23,6 +23,12 @@ enum OrgRole {
   MEMBER
 }
 
+enum OAuthProvider {
+  GOOGLE
+  APPLE
+  MICROSOFT
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
@@ -34,6 +40,26 @@ model User {
 
   memberships   OrganizationMember[]
   refreshTokens RefreshToken[]
+  oauthAccounts OAuthAccount[]
+}
+
+/// One row per (provider, external account) a user has linked. A user who
+/// registered with a password and later signs in with Google gets a row
+/// added here rather than a second User — matched by email at link time,
+/// same as most consumer apps' "connect Google to your existing account"
+/// behavior (ARCHITECTURE.md §7 doesn't mandate this, but it's the least
+/// surprising default and avoids duplicate accounts per email).
+model OAuthAccount {
+  id                String        @id @default(uuid())
+  provider          OAuthProvider
+  providerAccountId String
+  userId            String
+  createdAt         DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Organization {

@@ -9,6 +9,7 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import * as argon2 from "argon2";
 import { prisma } from "@transcriptioneer/database";
+import type { OAuthProvider } from "@transcriptioneer/database";
 import type {
   AuthenticatedUser,
   AuthSession,
@@ -111,6 +112,82 @@ export class AuthService {
     if (!membership) {
       throw invalidCredentials;
     }
+
+    return this.buildAuthResult(user, membership);
+  }
+
+  /** Shared by every OAuth provider's callback handler (Google today; Apple/
+   * Microsoft once their strategies are wired). Links to an existing
+   * password account by email when one exists (the provider has already
+   * verified the email), otherwise creates a new User + Organization, same
+   * shape as `register` but with no password ever set. */
+  async loginOrRegisterWithOAuth(params: {
+    provider: OAuthProvider;
+    providerAccountId: string;
+    email: string;
+    name: string;
+  }): Promise<AuthResult> {
+    const existingAccount = await prisma.oAuthAccount.findUnique({
+      where: {
+        provider_providerAccountId: {
+          provider: params.provider,
+          providerAccountId: params.providerAccountId,
+        },
+      },
+    });
+
+    if (existingAccount) {
+      const user = await prisma.user.findUnique({
+        where: { id: existingAccount.userId },
+        include: { memberships: { include: { organization: true }, take: 1 } },
+      });
+      const membership = user?.memberships[0];
+      if (!user || !membership) {
+        throw new UnauthorizedException("Invalid OAuth account.");
+      }
+      return this.buildAuthResult(user, membership);
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { email: params.email },
+      include: { memberships: { include: { organization: true }, take: 1 } },
+    });
+
+    if (existingUser) {
+      const membership = existingUser.memberships[0];
+      if (!membership) {
+        throw new UnauthorizedException("Account exists but has no organization.");
+      }
+      await prisma.oAuthAccount.create({
+        data: {
+          provider: params.provider,
+          providerAccountId: params.providerAccountId,
+          userId: existingUser.id,
+        },
+      });
+      return this.buildAuthResult(existingUser, membership);
+    }
+
+    const { user, membership } = await prisma.$transaction(async (tx) => {
+      const createdUser = await tx.user.create({
+        data: { email: params.email, passwordHash: null, name: params.name },
+      });
+      const organization = await tx.organization.create({
+        data: { name: `${params.name}'s Workspace` },
+      });
+      const createdMembership = await tx.organizationMember.create({
+        data: { userId: createdUser.id, organizationId: organization.id, role: "OWNER" },
+        include: { organization: true },
+      });
+      await tx.oAuthAccount.create({
+        data: {
+          provider: params.provider,
+          providerAccountId: params.providerAccountId,
+          userId: createdUser.id,
+        },
+      });
+      return { user: createdUser, membership: createdMembership };
+    });
 
     return this.buildAuthResult(user, membership);
   }

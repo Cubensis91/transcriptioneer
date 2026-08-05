@@ -13,6 +13,14 @@ export const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(32, "JWT_REFRESH_SECRET must be at least 32 characters"),
   JWT_ACCESS_TTL_SECONDS: z.coerce.number().int().positive().default(900), // 15 min
   JWT_REFRESH_TTL_DAYS: z.coerce.number().int().positive().default(30),
+
+  // Optional: Google sign-in stays unregistered (routes return 501) until
+  // all three are set — no real provider app has been registered yet, and
+  // the app must boot cleanly without them (MILESTONE_3_AUTH.md's "OAuth
+  // stubs" scope).
+  GOOGLE_CLIENT_ID: z.string().min(1).optional(),
+  GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
+  GOOGLE_CALLBACK_URL: z.string().url().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

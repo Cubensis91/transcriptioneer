@@ -9,17 +9,37 @@ applied to a live database yet).
 **Update 2026-08-04:** items 2–10 (the `/api/v1/auth` module itself —
 register/login/refresh/logout, Argon2id hashing, JWT+rotating-refresh
 sessions, guards with repository-layer org scoping, rate limiting,
-validation, and tests) are now implemented in `apps/api/src/auth/` and
-unit-tested (17/17 passing) against a mocked Prisma client — see the item-by-
-item detail and the acceptance-criteria checkboxes below. **Not yet done:**
-OAuth stubs (the other half of the original item 2 — deliberately deferred,
-see "Explicitly out of scope" below), item 11 (web screens, sequenced last
-per this document's own ordering), and verifying any of this against a
-**live** database (same Docker/sandbox constraint as item 1's migration).
-`ARCHITECTURE.md` §4 (entities), §5 (API routes), and §7 (security model)
-remain the technical spec for *what* to build; this document is the concrete,
-sign-off-able scope for *this* milestone specifically — same role
-`MILESTONE_1_REBUILD.md` played for Milestone 1.
+validation, and tests) are implemented in `apps/api/src/auth/` and
+unit-tested against a mocked Prisma client. **Update 2026-08-05:** deployed
+to the production VPS and live-verified against the real database (see
+"Live verification" under Acceptance criteria below) — 2026-08-04's
+email+password work is now fully done end-to-end.
+
+**Update 2026-08-05 (later the same day): Google OAuth stub added.**
+`GoogleStrategy` (Passport, `passport-google-oauth20`) and
+`AuthService.loginOrRegisterWithOAuth` are implemented — `GET
+/api/v1/auth/google` and `GET /api/v1/auth/google/callback`. The strategy is
+only registered as a Nest provider when `GOOGLE_CLIENT_ID`/
+`GOOGLE_CLIENT_SECRET`/`GOOGLE_CALLBACK_URL` are all set; without them the
+app still boots cleanly and both routes return `501 Not Implemented`
+(`GoogleAuthGuard` checks this itself, rather than letting Passport fail on
+an unregistered strategy). No real Google OAuth app has been registered yet
+— see "Deferred" below — so this cannot be end-to-end tested against the
+real Google consent screen, only unit-tested (account creation, repeat
+sign-in returns the same account, linking to an existing password account by
+email). Required a new Prisma model (`OAuthAccount`, generic across
+providers) and migration (`20260805023729_add_oauth_accounts`), generated
+offline the same way as the original auth migration and confirmed against
+the live VPS database. Apple/Microsoft strategies are **not** built —
+same pattern, not done yet; do them the same way once needed.
+
+**Not yet done:** item 11 (web screens, sequenced last per this document's
+own ordering), Apple/Microsoft OAuth strategies, and real Google OAuth
+credentials (see "Deferred"). `ARCHITECTURE.md` §4 (entities), §5 (API
+routes), and §7 (security model) remain the technical spec for *what* to
+build; this document is the concrete, sign-off-able scope for *this*
+milestone specifically — same role `MILESTONE_1_REBUILD.md` played for
+Milestone 1.
 
 This is where the real knowledge-graph Prisma schema begins replacing the
 Milestone 1 `HealthCheck` placeholder (its own comment in `schema.prisma`
@@ -46,9 +66,11 @@ and/or organization per §7.
    2026-08-04): all four endpoints implemented, tokens delivered as
    httpOnly cookies (never in the JSON body), plus `GET /auth/me` and
    `GET /auth/organizations/:id` (the latter added specifically to prove
-   item 5's scoping). OAuth callback **stubs** for Google/Apple/Microsoft
-   are **not yet built** — deliberately deferred to a follow-up pass (see
-   "Deferred" below); this pass focused on email+password only.
+   item 5's scoping). OAuth callback **stub for Google done** (2026-08-05):
+   `GET /auth/google` + `GET /auth/google/callback`, strategy registered
+   only when real credentials are configured (501 otherwise) — see the
+   2026-08-05 update above. **Apple/Microsoft stubs not yet built** — same
+   pattern, do them the same way once needed.
 3. **Password hashing** — Argon2id (§7). **Done** — `argon2.hash(...,
    { type: argon2.argon2id })` in `AuthService.register`.
 4. **Sessions** — short-lived JWT access token + rotating refresh token,
@@ -106,11 +128,9 @@ and/or organization per §7.
 
 ## Explicitly out of scope
 
-- OAuth callback stubs themselves (Google/Apple/Microsoft strategy-pattern
-  scaffolding, no real credentials) — founder decision 2026-08-04 to build
-  email+password auth (items 2-10) completely first, since it's what
-  actually unblocks everything else (including the live-database
-  verification owed on item 1). Follow-up pass, not this one.
+- Apple/Microsoft OAuth callback stubs (strategy-pattern scaffolding, no
+  real credentials) — Google's stub (2026-08-05) established the pattern;
+  Apple/Microsoft are the same shape of work, just not done yet.
 - Real OAuth provider integration (actual Google/Apple/Microsoft client
   IDs/secrets and end-to-end flows) — stubs/scaffolding only this milestone;
   see "Deferred" below for why.
@@ -206,5 +226,8 @@ deleted afterward — production database has no leftover test data.
 - **Real OAuth provider credentials** — registering actual Google/Apple/
   Microsoft OAuth apps requires a real (or at least stable staging) callback
   URL and provider-side account setup, which isn't a coding task and doesn't
-  block writing the strategy-pattern scaffolding now. Wire real credentials
-  once there's a URL worth registering.
+  block writing the strategy-pattern scaffolding now. Google's scaffolding
+  is done (2026-08-05, see above) and ready for `GOOGLE_CLIENT_ID`/
+  `GOOGLE_CLIENT_SECRET`/`GOOGLE_CALLBACK_URL` — `app.transcriptioneer.online`
+  is a stable callback URL now, so this is just an account-setup task
+  (register the app at console.cloud.google.com), not a coding one.

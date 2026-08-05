@@ -144,12 +144,28 @@ against both, not just against technical completeness.
   up afterward. See `MILESTONE_3_AUTH.md`'s "Live verification" section and
   updated acceptance-criteria checkboxes (now all checked except the web
   screens and OAuth stubs).
-- **Not yet done:** OAuth stubs for Google/Apple/Microsoft (deliberately
-  deferred — founder decision 2026-08-04 to finish email+password auth
-  completely first) and web login/register screens (`apps/web` — sequenced
-  last per `MILESTONE_3_AUTH.md`'s own ordering).
-- Estimated completion: ~85–90% of the milestone's 11-item scope (up from
-  ~10–15%) — the remaining ~10-15% is OAuth stubs and web screens.
+- **Update 2026-08-05 (same day): Google OAuth stub added.**
+  `GoogleStrategy` (Passport) + `AuthService.loginOrRegisterWithOAuth` +
+  `GET /api/v1/auth/google` / `.../google/callback`. Required a new schema
+  model (`OAuthAccount`, generic across providers, migration
+  `20260805023729_add_oauth_accounts`) generated offline the same way as
+  the original auth migration, then confirmed applied on the live VPS
+  database. The strategy is only registered when
+  `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET`/`GOOGLE_CALLBACK_URL` are all
+  set — without them the app still boots and both routes return
+  `501 Not Implemented` rather than crashing or erroring oddly. No real
+  Google OAuth app is registered yet (that's an account-setup task, not
+  code — see `MILESTONE_3_AUTH.md`'s "Deferred" section), so this is
+  unit-tested (new-account creation, repeat sign-in, linking to an
+  existing password account by email) but not yet exercised against the
+  real Google consent screen.
+- **Not yet done:** Apple/Microsoft OAuth stubs (same pattern as Google,
+  just not built), web login/register screens (`apps/web` — sequenced
+  last per `MILESTONE_3_AUTH.md`'s own ordering), and registering a real
+  Google OAuth app.
+- Estimated completion: ~90% of the milestone's 11-item scope — the
+  remaining ~10% is web screens (Apple/Microsoft OAuth stubs are a
+  nice-to-have, not blocking; item 11 is the only hard remaining item).
 
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
