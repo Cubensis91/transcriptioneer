@@ -10,17 +10,22 @@ export type GoogleOAuthPayload = {
   name: string;
 };
 
-/** Only instantiated when GOOGLE_CLIENT_ID/SECRET/CALLBACK_URL are all set —
- * see auth.module.ts. Without that, this class is never constructed, so
- * passport-google-oauth20's constructor (which throws on missing
- * clientID/clientSecret) never runs. */
+/** Always registered as a provider (see auth.module.ts) — Passport needs the
+ * "google" strategy to exist at all, or every /google request fails with
+ * "Unknown authentication strategy" regardless of configuration. When real
+ * credentials aren't set, placeholder values keep passport-google-oauth20's
+ * constructor (which throws on missing clientID/clientSecret) happy; actual
+ * use is blocked earlier by GoogleAuthGuard, which checks configuration via
+ * ConfigService and returns 501 before Passport ever runs this strategy. */
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, "google") {
   constructor(configService: ConfigService<Env, true>) {
     super({
-      clientID: configService.get("GOOGLE_CLIENT_ID", { infer: true }),
-      clientSecret: configService.get("GOOGLE_CLIENT_SECRET", { infer: true }),
-      callbackURL: configService.get("GOOGLE_CALLBACK_URL", { infer: true }),
+      clientID: configService.get("GOOGLE_CLIENT_ID", { infer: true }) ?? "not-configured",
+      clientSecret: configService.get("GOOGLE_CLIENT_SECRET", { infer: true }) ?? "not-configured",
+      callbackURL:
+        configService.get("GOOGLE_CALLBACK_URL", { infer: true }) ??
+        "http://localhost/not-configured",
       scope: ["email", "profile"],
     });
   }

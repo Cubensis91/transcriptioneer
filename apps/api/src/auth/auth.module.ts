@@ -1,4 +1,4 @@
-import { Module, type Provider } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { JwtModule } from "@nestjs/jwt";
 import { PassportModule } from "@nestjs/passport";
 import { AuthController } from "./auth.controller";
@@ -6,22 +6,6 @@ import { AuthService } from "./auth.service";
 import { GoogleAuthGuard } from "./google-auth.guard";
 import { GoogleStrategy } from "./google.strategy";
 import { JwtStrategy } from "./jwt.strategy";
-
-// GoogleStrategy's constructor (via passport-google-oauth20) throws if
-// clientID/clientSecret are missing, so it's only registered as a provider
-// when all three env vars are present — checked here at module-definition
-// time (process.env directly; ConfigService isn't available yet at this
-// point in the bootstrap). GoogleAuthGuard checks the same condition per-
-// request via ConfigService, so an unconfigured deployment gets a clean 501
-// rather than Nest failing to resolve an unregistered provider.
-const providers: Provider[] = [AuthService, JwtStrategy, GoogleAuthGuard];
-if (
-  process.env.GOOGLE_CLIENT_ID &&
-  process.env.GOOGLE_CLIENT_SECRET &&
-  process.env.GOOGLE_CALLBACK_URL
-) {
-  providers.push(GoogleStrategy);
-}
 
 @Module({
   imports: [
@@ -32,7 +16,12 @@ if (
     JwtModule.register({}),
   ],
   controllers: [AuthController],
-  providers,
+  // GoogleStrategy is always registered — Passport needs the "google"
+  // strategy to exist regardless of configuration, or every /google request
+  // fails with "Unknown authentication strategy" (see google.strategy.ts for
+  // how it stays inert without real credentials). GoogleAuthGuard is what
+  // actually gates access based on whether GOOGLE_CLIENT_ID etc. are set.
+  providers: [AuthService, JwtStrategy, GoogleAuthGuard, GoogleStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}

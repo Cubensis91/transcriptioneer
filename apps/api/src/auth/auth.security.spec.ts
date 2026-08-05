@@ -104,9 +104,9 @@ describe("Auth security (guard + rate limiting)", () => {
 
   describe("GoogleAuthGuard", () => {
     it("returns 501 when Google credentials are not configured", async () => {
-      // This process's env has no GOOGLE_CLIENT_ID, so AuthModule never
-      // registered GoogleStrategy — GoogleAuthGuard should catch that
-      // itself rather than surfacing Passport's "unknown strategy" error.
+      // TEST_ENV has no GOOGLE_CLIENT_ID — GoogleAuthGuard must catch that
+      // itself via ConfigService, not rely on the strategy being absent
+      // (it's always registered; see google.strategy.ts).
       await request(app.getHttpServer()).get("/api/v1/auth/google").expect(501);
     });
   });
