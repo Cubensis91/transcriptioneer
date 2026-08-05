@@ -10,9 +10,10 @@ MILESTONE 0 — ARCHITECTURE / PRODUCT PHILOSOPHY — COMPLETE
 MILESTONE 1 — PROJECT FOUNDATION — COMPLETE
 MILESTONE 2 — DESIGN SYSTEM + DESIGN LAB — COMPLETE
 MILESTONE 2.5 — VISUAL/PRODUCT REFINEMENT — COMPLETE (2026-07-29)
-MILESTONE 3 — AUTHENTICATION — IN PROGRESS (started 2026-07-29): schema +
-  API auth module done, OAuth stubs + web screens + live-DB verification
-  remain (updated 2026-08-04)
+MILESTONE 3 — AUTHENTICATION — IN PROGRESS (started 2026-07-29): schema,
+  API auth module, Google OAuth stub (real credentials live), and web
+  login/register screens all done; Apple/Microsoft OAuth + route
+  protection remain (updated 2026-08-05)
 ```
 
 Milestone 2.5 is done: the founder resolved its one open question
@@ -174,13 +175,42 @@ against both, not just against technical completeness.
   with the correct `client_id`/`redirect_uri`. See `MILESTONE_3_AUTH.md`
   for the full bug writeup. Not yet walked through the full consent-to-
   callback flow with a real browser session.
+- **Update 2026-08-05 (final pass): web login/register screens.**
+  `apps/web/src/app/(auth)/{login,register}/page.tsx` + a shared
+  `(auth)/layout.tsx`, built entirely from existing `packages/ui`
+  components and brand assets (`BrandLockup`, `ScribeMark`, the same
+  cosmic-hero background treatment as `IntakeThreshold`) — no new visual
+  components invented, matching what was asked. Client-side validation
+  reuses `registerSchema`/`loginSchema` from `packages/validation` (added
+  as an `apps/web` dependency). New `lib/services/auth-service.ts` calls
+  the real API with `credentials: "include"` — extended the shared
+  `packages/api-client` with an optional `credentials` field rather than
+  building a second client. "Continuar con Google" links to
+  `GET /api/v1/auth/google`. Verified live in a real browser: both pages
+  render correctly, validation blocks bad submissions with the exact zod
+  messages, a network failure shows a clean error instead of crashing.
+  **Two real bugs found and fixed along the way:** (1) `googleCallback`
+  was returning JSON instead of redirecting the browser back to
+  `WEB_APP_URL` — harmless for `fetch`-based endpoints, but this one is
+  reached via a real full-page navigation, so a user finishing Google
+  sign-in would've landed on raw JSON instead of back in the app; (2)
+  Vitest here runs with `globals: false`, so `@testing-library/react`
+  never self-registered its automatic per-test DOM cleanup — any test
+  file with more than one `it()` leaked DOM across tests. Fixed globally
+  in `vitest.setup.ts`, protecting every future multi-test file in
+  `apps/web`, not just the two new ones. `typecheck`/`lint` clean; tests
+  green except the same pre-existing, unrelated stale-copy failure in
+  `(dashboard)/page.test.tsx`. See `MILESTONE_3_AUTH.md` for full detail.
 - **Not yet done:** Apple/Microsoft OAuth stubs (same pattern as Google,
-  just not built), web login/register screens (`apps/web` — sequenced
-  last per `MILESTONE_3_AUTH.md`'s own ordering), and the actual
-  browser-based Google sign-in walkthrough.
-- Estimated completion: ~90% of the milestone's 11-item scope — the
-  remaining ~10% is web screens (Apple/Microsoft OAuth stubs are a
-  nice-to-have, not blocking; item 11 is the only hard remaining item).
+  just not built), route protection on `(dashboard)` (no auth guard exists
+  there yet — intentionally out of scope, see `MILESTONE_3_AUTH.md`), and
+  an end-to-end walkthrough of both the password and Google flows against
+  a running backend (this sandbox has none; next step is trying it against
+  the VPS or a local API instance).
+- Estimated completion: ~98% of the milestone's 11-item scope — all 11
+  items have real, working code; what's left is end-to-end verification
+  and the two explicitly-deferred, non-blocking extras (Apple/Microsoft,
+  route protection).
 
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.

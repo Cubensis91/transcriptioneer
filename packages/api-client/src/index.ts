@@ -14,6 +14,9 @@ export class ApiClientError extends Error {
 export type ApiClientConfig = {
   baseUrl: string;
   getAuthToken?: () => string | null | undefined;
+  /** Send/receive cookies (e.g. the auth module's httpOnly session cookies).
+   * Off by default — most callers here use Bearer tokens instead. */
+  credentials?: RequestCredentials;
 };
 
 /**
@@ -25,6 +28,7 @@ export function createApiClient(config: ApiClientConfig) {
   async function request<T>(path: string, init?: RequestInit): Promise<T> {
     const token = config.getAuthToken?.();
     const response = await fetch(`${config.baseUrl}${path}`, {
+      credentials: config.credentials,
       ...init,
       headers: {
         "Content-Type": "application/json",

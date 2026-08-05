@@ -104,19 +104,20 @@ export class AuthController {
 
   @Get("google/callback")
   @UseGuards(GoogleAuthGuard)
-  async googleCallback(
-    @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<ApiResponse<AuthSession>> {
+  async googleCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
     const profile = req.user as GoogleOAuthPayload;
-    const { session, tokens } = await this.authService.loginOrRegisterWithOAuth({
+    const { tokens } = await this.authService.loginOrRegisterWithOAuth({
       provider: "GOOGLE",
       providerAccountId: profile.providerAccountId,
       email: profile.email,
       name: profile.name,
     });
     this.setAuthCookies(res, tokens);
-    return { success: true, data: session };
+    // Unlike every other auth endpoint, this one is reached via a real
+    // full-page browser navigation (the "Continuar con Google" link, then
+    // Google's own redirect) — returning JSON would leave the user staring
+    // at a raw API response instead of landing back in the app.
+    res.redirect(this.configService.get("WEB_APP_URL", { infer: true }));
   }
 
   @Get("me")

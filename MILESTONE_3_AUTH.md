@@ -33,10 +33,46 @@ offline the same way as the original auth migration and confirmed against
 the live VPS database. Apple/Microsoft strategies are **not** built —
 same pattern, not done yet; do them the same way once needed.
 
-**Not yet done:** item 11 (web screens, sequenced last per this document's
-own ordering), Apple/Microsoft OAuth strategies, and real Google OAuth
-credentials (see "Deferred"). `ARCHITECTURE.md` §4 (entities), §5 (API
-routes), and §7 (security model) remain the technical spec for *what* to
+**Update 2026-08-05 (final pass): web login/register screens.**
+`apps/web/src/app/(auth)/{login,register}/page.tsx` + a shared
+`(auth)/layout.tsx` (no sidebar, cosmic-hero background matching
+`IntakeThreshold`'s treatment). Built entirely from existing `packages/ui`
+components (`Card`, `FormField`, `Input`, `Button`, `Alert`) and existing
+brand assets (`BrandLockup`, `ScribeMark`, `/brand/intake-bg.jpg`) — no new
+visual components invented. Client-side validation reuses
+`registerSchema`/`loginSchema` from `packages/validation` directly (added as
+an `apps/web` dependency, previously unused there), so validation rules
+can't drift between client and server. A new `apps/web/src/lib/services/
+auth-service.ts` calls the real API with `credentials: "include"` (the
+existing `packages/api-client` was Bearer-token-only; extended it with an
+optional `credentials` config field rather than forking a second client).
+"Continuar con Google" links straight to `GET /api/v1/auth/google`.
+Verified live in a real browser (Turbopack dev server): both pages render
+correctly, client-side validation blocks an empty submit with the exact
+zod messages, and a network failure (no backend running in this sandbox)
+surfaces a clean `Alert` instead of crashing — screenshotted, matches the
+cosmic/tactile design system. Not yet tested against a running backend
+end-to-end (register → redirect → dashboard) since this sandbox has no
+live API; that's next once this is reachable against the VPS or a local
+API instance. 4 new tests (`login/page.test.tsx`, `register/page.test.tsx`)
+— found and fixed a real, previously-latent bug along the way: Vitest here
+runs with `globals: false`, so `@testing-library/react`'s automatic
+per-test DOM cleanup never self-registered, meaning any test file with
+more than one `it()` would leak DOM across tests (both new files hit this
+immediately). Fixed globally in `vitest.setup.ts` (`afterEach(cleanup)`),
+which will also protect any future multi-test file in `apps/web`, not just
+these two. `pnpm typecheck`/`lint` clean; `pnpm test` green except the
+same pre-existing, unrelated stale-copy failure in `(dashboard)/
+page.test.tsx` (English text vs. the app's actual Spanish copy — confirmed
+pre-existing via `git stash` in an earlier session, not touched here).
+
+**Not yet done:** route protection (no auth guard/middleware exists yet on
+`(dashboard)` — out of scope for this pass, matching
+`MILESTONE_2.5_VISUAL_REFINEMENT.md`'s explicit deferral of wiring real
+auth-gated data into the homepage), Apple/Microsoft OAuth strategies, and
+walking the real Google OAuth consent screen end-to-end. `ARCHITECTURE.md`
+§4 (entities), §5 (API routes), and §7 (security model) remain the
+technical spec for *what* to
 build; this document is the concrete, sign-off-able scope for *this*
 milestone specifically — same role `MILESTONE_1_REBUILD.md` played for
 Milestone 1.
@@ -124,7 +160,20 @@ and/or organization per §7.
     the already-committed `packages/ui` library and `VISUAL_IDENTITY.md`'s
     tactile/skeuomorphic direction — sequenced **last**, after items 1–10
     are complete and passing, per `PROJECT_STATUS.md`'s existing "before
-    touching any web UI for login/register" ordering.
+    touching any web UI for login/register" ordering. **Login/register done**
+    2026-08-05 — see the update above. No separate OAuth-callback screen
+    exists (or is needed): `GET /auth/google/callback` sets cookies then
+    redirects the browser to `WEB_APP_URL`, entirely on the backend.
+
+    **Bug found and fixed while wiring the "Continuar con Google" link**
+    (2026-08-05): `googleCallback` originally returned the `ApiResponse<
+    AuthSession>` JSON body, same as every other auth endpoint — fine for
+    `fetch`-based calls, but this endpoint is reached via a real full-page
+    browser navigation (the login/register page's plain `<a href>`, then
+    Google's own redirect back), so a user completing sign-in would have
+    landed on a raw JSON page instead of back in the app. Fixed by having
+    it call `res.redirect(WEB_APP_URL)` after setting cookies instead of
+    returning a body — the one auth endpoint that isn't `fetch`-shaped.
 
 ## Explicitly out of scope
 
@@ -201,8 +250,15 @@ and/or organization per §7.
       stash`, unrelated to auth. `build` not re-run in the sandbox this
       session (no Turbopack fix applied there), but the VPS's own
       `nest build` for `apps/api` succeeded cleanly as part of deployment.
-- [ ] Web login/register screens work against the real API (not mocked),
-      styled per the committed design system.
+- [x] Web login/register screens work against the real API (not mocked),
+      styled per the committed design system. Built entirely from existing
+      `packages/ui` components and brand assets — no new visual components.
+      Verified live in a real browser: renders correctly, client-side
+      validation (shared `packages/validation` schemas) blocks bad
+      submissions, a network failure surfaces cleanly instead of crashing.
+      Not yet exercised against a running backend end-to-end in this
+      sandbox (no live API here) — that's the next thing to try, ideally
+      against the VPS.
 
 ### Live verification (2026-08-05, on the production VPS)
 
