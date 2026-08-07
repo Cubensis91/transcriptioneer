@@ -5,6 +5,7 @@ import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import { validateEnv } from "./config/env.validation";
 import { HealthModule } from "./health/health.module";
 import { AuthModule } from "./auth/auth.module";
+import { FilesModule } from "./files/files.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { AuthModule } from "./auth/auth.module";
     ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 100 }]),
     HealthModule,
     AuthModule,
+    FilesModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })

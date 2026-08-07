@@ -1,9 +1,9 @@
 // Milestone 3: authentication. The real knowledge-graph schema begins here
 // (User/Organization/OrganizationMember), replacing the Milestone 1
-// HealthCheck placeholder. The rest of the graph (SourceFile, ProcessingJob,
-// Transcript, KnowledgeItem, Chunk, Conversation, etc. — see
-// ARCHITECTURE.md §4) lands incrementally starting Milestone 4, once a
-// feature actually needs each entity.
+// HealthCheck placeholder. The rest of the graph (ProcessingJob, Transcript,
+// KnowledgeItem, Chunk, Conversation, etc. — see ARCHITECTURE.md §4) lands
+// incrementally starting Milestone 5, once a feature actually needs each
+// entity. SourceFile (Milestone 4) is the first of those.
 
 generator client {
   provider        = "prisma-client-js"
@@ -41,6 +41,7 @@ model User {
   memberships   OrganizationMember[]
   refreshTokens RefreshToken[]
   oauthAccounts OAuthAccount[]
+  uploadedFiles SourceFile[]
 }
 
 /// One row per (provider, external account) a user has linked. A user who
@@ -69,6 +70,7 @@ model Organization {
   updatedAt DateTime @updatedAt
 
   members OrganizationMember[]
+  files   SourceFile[]
 }
 
 /// Multi-tenant from day one (ARCHITECTURE.md §7) — every later entity
@@ -109,4 +111,41 @@ model RefreshToken {
   replacesToken   RefreshToken? @relation("TokenRotation")
 
   @@index([userId])
+}
+
+enum SourceFileStatus {
+  /// Row exists (a presigned PUT URL was issued) but the client hasn't
+  /// confirmed the upload finished yet — including uploads that never
+  /// completed (abandoned tab, network failure).
+  PENDING
+  /// Uploaded, verified to exist in storage, and passed magic-byte
+  /// validation against its declared type.
+  UPLOADED
+  /// Confirmed but rejected — e.g. the actual file bytes didn't match the
+  /// declared mime type. The storage object is deleted when this happens.
+  FAILED
+}
+
+/// The uploaded artifact itself (ARCHITECTURE.md §4) — Milestone 4's only
+/// addition to the knowledge graph. Everything downstream (ProcessingJob,
+/// Transcript, Document, KnowledgeItem, ...) hangs off this starting
+/// Milestone 5, once transcription/analysis actually needs it.
+model SourceFile {
+  id             String           @id @default(uuid())
+  organizationId String
+  uploadedById   String
+  /// Object key in the storage bucket — never exposed to clients directly;
+  /// all access goes through short-lived presigned URLs (ARCHITECTURE.md §7).
+  storageKey     String           @unique
+  originalName   String
+  mimeType       String
+  sizeBytes      Int
+  status         SourceFileStatus @default(PENDING)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  uploadedBy   User         @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
 }

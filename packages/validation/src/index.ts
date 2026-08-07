@@ -47,3 +47,42 @@ export const loginSchema = z.object({
 });
 
 export type LoginInput = z.infer<typeof loginSchema>;
+
+// Matches the file kinds IntakeThreshold's UI already advertises
+// (apps/web/src/components/upload/intake-threshold.tsx) — audio, video,
+// pdf, docx, txt, md, image. Prefix-matched against the browser-declared
+// mime type at request time and re-checked against the *actual* magic
+// bytes once the upload lands in storage (ARCHITECTURE.md §7) — this list
+// only gates the presign step, it isn't the final word on what a file is.
+export const ALLOWED_UPLOAD_MIME_PREFIXES = [
+  "audio/",
+  "video/",
+  "image/",
+  "application/pdf",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "text/plain",
+  "text/markdown",
+] as const;
+
+// 500MB — generous enough for a typical recorded meeting or lecture video
+// without inviting arbitrarily large uploads; revisit once real usage data
+// exists.
+export const MAX_UPLOAD_BYTES = 500 * 1024 * 1024;
+
+export const presignUploadSchema = z.object({
+  filename: z.string().trim().min(1, "Filename is required.").max(255),
+  mimeType: z
+    .string()
+    .min(1, "File type is required.")
+    .refine(
+      (value) => ALLOWED_UPLOAD_MIME_PREFIXES.some((prefix) => value.startsWith(prefix)),
+      "This file type isn't supported.",
+    ),
+  sizeBytes: z.coerce
+    .number()
+    .int()
+    .positive("File is empty.")
+    .max(MAX_UPLOAD_BYTES, "File is too large (max 500MB)."),
+});
+
+export type PresignUploadInput = z.infer<typeof presignUploadSchema>;

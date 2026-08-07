@@ -21,6 +21,17 @@ export const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().min(1).optional(),
   GOOGLE_CLIENT_SECRET: z.string().min(1).optional(),
   GOOGLE_CALLBACK_URL: z.string().url().optional(),
+
+  // Optional, same reasoning as the Google vars above: the app must boot
+  // cleanly without a storage backend configured. Unlike Google sign-in
+  // (one guard checks one thing), every /api/v1/files endpoint depends on
+  // this, so StorageService itself throws a clear 503 if any are missing
+  // rather than each caller re-checking.
+  STORAGE_ENDPOINT: z.string().url().optional(),
+  STORAGE_BUCKET: z.string().min(1).optional(),
+  STORAGE_ACCESS_KEY_ID: z.string().min(1).optional(),
+  STORAGE_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+  STORAGE_REGION: z.string().min(1).default("us-east-1"),
 });
 
 export type Env = z.infer<typeof envSchema>;

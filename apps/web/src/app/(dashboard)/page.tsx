@@ -2,7 +2,7 @@
 
 import { ApiClientError, createApiClient } from "@transcriptioneer/api-client";
 import type { HealthStatus } from "@transcriptioneer/types";
-import { Avatar, Card, CardContent, ThemeToggleButton, cn } from "@transcriptioneer/ui";
+import { Avatar, Card, CardContent, ThemeToggleButton, cn, toast } from "@transcriptioneer/ui";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { BrandLockup } from "@/components/brand-mark";
@@ -13,6 +13,7 @@ import { QuickInsightsPanel } from "@/components/dashboard/quick-insights-panel"
 import { processingStageToVisualState } from "@/components/file-state/file-state-meta";
 import { NotificationsButton } from "@/components/navigation/notifications-button";
 import { IntakeThreshold } from "@/components/upload/intake-threshold";
+import { filesService } from "@/lib/services/files-service";
 import { mockDocuments } from "@/lib/mock-data";
 
 const apiClient = createApiClient({
@@ -52,6 +53,21 @@ function ApiStatusDot() {
   );
 }
 
+async function handleFilesSelected(files: FileList) {
+  for (const file of Array.from(files)) {
+    try {
+      await filesService.uploadFile(file);
+      toast({ title: "Archivo recibido", description: `${file.name} se subió correctamente.`, variant: "success" });
+    } catch (err) {
+      toast({
+        title: "No se pudo subir el archivo",
+        description: err instanceof ApiClientError ? err.message : `${file.name} no se pudo subir.`,
+        variant: "error",
+      });
+    }
+  }
+}
+
 export default function Home() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -78,7 +94,11 @@ export default function Home() {
       </header>
 
       <main className="flex flex-1 flex-col gap-8 overflow-y-auto px-4 pb-24 sm:px-8 lg:pb-8">
-        <IntakeThreshold size="hero" className="mx-auto w-full max-w-3xl" />
+        <IntakeThreshold
+          size="hero"
+          className="mx-auto w-full max-w-3xl"
+          onFilesSelected={(files) => void handleFilesSelected(files)}
+        />
 
         <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1fr_20rem]">
           <div className="flex flex-col gap-6">

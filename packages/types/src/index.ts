@@ -58,3 +58,24 @@ export type AuthenticatedUser = {
   organizationId: string;
   role: OrgRole;
 };
+
+export type SourceFileStatus = "PENDING" | "UPLOADED" | "FAILED";
+
+/** Never includes `storageKey` — clients never see the raw object key,
+ *  only short-lived presigned URLs (ARCHITECTURE.md §7). */
+export type SourceFile = {
+  id: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  status: SourceFileStatus;
+  createdAt: string;
+};
+
+/** Response to `POST /api/v1/files/presign` — `uploadUrl` is a short-lived
+ *  presigned PUT URL the browser uploads directly to (bypassing the API),
+ *  then confirms via `POST /api/v1/files/:id/complete`. */
+export type PresignUploadResponse = {
+  file: SourceFile;
+  uploadUrl: string;
+};
