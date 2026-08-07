@@ -9,7 +9,6 @@ import {
   Res,
   UnauthorizedException,
   UseGuards,
-  UsePipes,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { Throttle } from "@nestjs/throttler";
@@ -42,9 +41,12 @@ export class AuthController {
   @Post("register")
   @HttpCode(201)
   @Throttle(AUTH_THROTTLE)
-  @UsePipes(new ZodValidationPipe(registerSchema))
   async register(
-    @Body() input: RegisterInput,
+    // Pipe applied to this param specifically, not via a method-level
+    // @UsePipes — the latter would run every param (including any
+    // @CurrentUser() added later) through the same schema. See
+    // files.controller.ts's presign() for where this actually broke.
+    @Body(new ZodValidationPipe(registerSchema)) input: RegisterInput,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<AuthSession>> {
     const { session, tokens } = await this.authService.register(input);
@@ -55,9 +57,8 @@ export class AuthController {
   @Post("login")
   @HttpCode(200)
   @Throttle(AUTH_THROTTLE)
-  @UsePipes(new ZodValidationPipe(loginSchema))
   async login(
-    @Body() input: LoginInput,
+    @Body(new ZodValidationPipe(loginSchema)) input: LoginInput,
     @Res({ passthrough: true }) res: Response,
   ): Promise<ApiResponse<AuthSession>> {
     const { session, tokens } = await this.authService.login(input);

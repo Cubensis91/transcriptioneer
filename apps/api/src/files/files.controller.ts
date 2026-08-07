@@ -1,14 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  HttpCode,
-  Param,
-  Post,
-  UseGuards,
-  UsePipes,
-} from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, Post, UseGuards } from "@nestjs/common";
 import { presignUploadSchema } from "@transcriptioneer/validation";
 import type { PresignUploadInput } from "@transcriptioneer/validation";
 import type {
@@ -29,10 +19,14 @@ export class FilesController {
 
   @Post("presign")
   @HttpCode(201)
-  @UsePipes(new ZodValidationPipe(presignUploadSchema))
   async presign(
     @CurrentUser() user: AuthenticatedUser,
-    @Body() input: PresignUploadInput,
+    // Pipe applied to this param specifically, not via a method-level
+    // @UsePipes — that would also run @CurrentUser()'s value through the
+    // same schema (it's a custom decorator, not one of Nest's pipe-exempt
+    // built-ins like @Req/@Res), which fails validation for an unrelated
+    // reason and previously broke this exact endpoint in production.
+    @Body(new ZodValidationPipe(presignUploadSchema)) input: PresignUploadInput,
   ): Promise<ApiResponse<PresignUploadResponse>> {
     const result = await this.filesService.presignUpload(user, input);
     return { success: true, data: result };
