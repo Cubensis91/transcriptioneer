@@ -32,6 +32,20 @@ export const envSchema = z.object({
   STORAGE_ACCESS_KEY_ID: z.string().min(1).optional(),
   STORAGE_SECRET_ACCESS_KEY: z.string().min(1).optional(),
   STORAGE_REGION: z.string().min(1).default("us-east-1"),
+
+  // BullMQ's queue connection. ioredis (which BullMQ uses internally)
+  // connects lazily and retries in the background rather than throwing at
+  // construction time, so an unreachable Redis doesn't crash the app at
+  // boot — queue operations just fail/retry when actually invoked.
+  REDIS_URL: z.string().min(1).default("redis://localhost:6379"),
+
+  // Optional, same pattern as storage: the app boots fine without these,
+  // and the transcription worker marks the job FAILED with a clear message
+  // instead of crashing. Production values point at the venv provisioned
+  // per WHISPER_SETUP.md.
+  WHISPER_PYTHON_BIN: z.string().min(1).optional(),
+  WHISPER_SCRIPT_PATH: z.string().min(1).optional(),
+  WHISPER_MODEL: z.string().min(1).default("base"),
 });
 
 export type Env = z.infer<typeof envSchema>;

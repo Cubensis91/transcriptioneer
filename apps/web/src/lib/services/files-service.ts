@@ -1,5 +1,5 @@
 import { createApiClient } from "@transcriptioneer/api-client";
-import type { PresignUploadResponse, SourceFile } from "@transcriptioneer/types";
+import type { PresignUploadResponse, ProcessingJob, SourceFile, Transcript } from "@transcriptioneer/types";
 
 // Same reasoning as auth-service.ts: file endpoints require the session
 // cookie, so credentials: "include" is non-negotiable here.
@@ -59,5 +59,15 @@ export const filesService = {
 
   remove(id: string): Promise<null> {
     return filesApiClient.request<null>(`/api/v1/files/${id}`, { method: "DELETE" });
+  },
+
+  /** Null for non-transcribable files (e.g. a PDF) or before the job's
+   * been created yet — not an error, an expected state. */
+  getJob(id: string): Promise<ProcessingJob | null> {
+    return filesApiClient.request<ProcessingJob | null>(`/api/v1/files/${id}/job`);
+  },
+
+  getTranscript(id: string): Promise<Transcript | null> {
+    return filesApiClient.request<Transcript | null>(`/api/v1/files/${id}/transcript`);
   },
 };

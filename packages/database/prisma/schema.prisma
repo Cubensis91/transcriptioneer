@@ -1,9 +1,9 @@
 // Milestone 3: authentication. The real knowledge-graph schema begins here
 // (User/Organization/OrganizationMember), replacing the Milestone 1
-// HealthCheck placeholder. The rest of the graph (ProcessingJob, Transcript,
-// KnowledgeItem, Chunk, Conversation, etc. — see ARCHITECTURE.md §4) lands
-// incrementally starting Milestone 5, once a feature actually needs each
-// entity. SourceFile (Milestone 4) is the first of those.
+// HealthCheck placeholder. The rest of the graph (KnowledgeItem, Chunk,
+// Conversation, etc. — see ARCHITECTURE.md §4) lands incrementally as a
+// feature actually needs each entity. SourceFile (Milestone 4) and
+// ProcessingJob/Transcript (Milestone 5) are the first of those.
 
 generator client {
   provider        = "prisma-client-js"
@@ -147,5 +147,48 @@ model SourceFile {
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   uploadedBy   User         @relation(fields: [uploadedById], references: [id], onDelete: Cascade)
 
+  processingJob ProcessingJob?
+  transcript    Transcript?
+
   @@index([organizationId])
+}
+
+enum ProcessingStage {
+  QUEUED
+  TRANSCRIBING
+  COMPLETED
+  FAILED
+}
+
+/// One row per SourceFile per pipeline run (ARCHITECTURE.md §6's state
+/// machine) — only created for audio/video files, since transcription is
+/// the only pipeline that exists yet. `attempts` and `errorMessage` exist
+/// so a failed job is diagnosable without grepping worker logs.
+model ProcessingJob {
+  id           String          @id @default(uuid())
+  sourceFileId String          @unique
+  stage        ProcessingStage @default(QUEUED)
+  errorMessage String?
+  attempts     Int             @default(0)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  sourceFile SourceFile @relation(fields: [sourceFileId], references: [id], onDelete: Cascade)
+}
+
+/// Whisper's output for a SourceFile. `segments` is the raw
+/// timestamp/speaker-segment JSON Whisper returns when available — stored
+/// as-is (ARCHITECTURE.md §6: "preserves timestamps/speaker segments when
+/// the model returns them; never fabricates speaker identity"), not
+/// normalized into relational rows until a feature actually needs to query
+/// across segments.
+model Transcript {
+  id           String   @id @default(uuid())
+  sourceFileId String   @unique
+  text         String
+  language     String?
+  segments     Json?
+  createdAt    DateTime @default(now())
+
+  sourceFile SourceFile @relation(fields: [sourceFileId], references: [id], onDelete: Cascade)
 }

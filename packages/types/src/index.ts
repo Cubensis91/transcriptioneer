@@ -79,3 +79,27 @@ export type PresignUploadResponse = {
   file: SourceFile;
   uploadUrl: string;
 };
+
+export type ProcessingStage = "QUEUED" | "TRANSCRIBING" | "COMPLETED" | "FAILED";
+
+/** Only exists for audio/video SourceFiles — created the moment a
+ *  transcription job is enqueued (ARCHITECTURE.md §6's state machine). */
+export type ProcessingJob = {
+  stage: ProcessingStage;
+  errorMessage: string | null;
+  attempts: number;
+  updatedAt: string;
+};
+
+export type TranscriptSegment = {
+  start: number;
+  end: number;
+  text: string;
+};
+
+export type Transcript = {
+  text: string;
+  language: string | null;
+  segments: TranscriptSegment[];
+  createdAt: string;
+};

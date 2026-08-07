@@ -1,10 +1,19 @@
 import { randomUUID } from "node:crypto";
+import { InjectQueue } from "@nestjs/bullmq";
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { prisma } from "@transcriptioneer/database";
-import type { AuthenticatedUser, PresignUploadResponse, SourceFile } from "@transcriptioneer/types";
+import type {
+  AuthenticatedUser,
+  PresignUploadResponse,
+  ProcessingJob,
+  SourceFile,
+  Transcript,
+} from "@transcriptioneer/types";
 import type { PresignUploadInput } from "@transcriptioneer/validation";
+import type { Queue } from "bullmq";
 import { detectFileType } from "./file-type-loader";
 import { StorageService } from "./storage.service";
+import { TRANSCRIPTION_QUEUE, type TranscriptionJobData } from "../transcription/queue.constants";
 
 // file-type needs a decent prefix to detect some formats reliably (a few
 // container formats store their signature past the first KB) without
@@ -50,9 +59,20 @@ function matchesDeclaredCategory(detectedMime: string | undefined, declaredMime:
   return detectedMime.split("/")[0] === declaredMime.split("/")[0];
 }
 
+/** Only audio/video go through transcription — Whisper decodes a video's
+ * audio track natively via ffmpeg, so no separate extraction step is
+ * needed for it. Everything else (documents, images) is Milestone 6/7+. */
+function isTranscribable(mimeType: string): boolean {
+  return mimeType.startsWith("audio/") || mimeType.startsWith("video/");
+}
+
 @Injectable()
 export class FilesService {
-  constructor(private readonly storage: StorageService) {}
+  constructor(
+    private readonly storage: StorageService,
+    @InjectQueue(TRANSCRIPTION_QUEUE)
+    private readonly transcriptionQueue: Queue<TranscriptionJobData>,
+  ) {}
 
   async presignUpload(
     user: AuthenticatedUser,
@@ -101,6 +121,12 @@ export class FilesService {
       where: { id: file.id },
       data: { status: "UPLOADED", sizeBytes: head.sizeBytes },
     });
+
+    if (isTranscribable(updated.mimeType)) {
+      await prisma.processingJob.create({ data: { sourceFileId: updated.id } });
+      await this.transcriptionQueue.add("transcribe", { sourceFileId: updated.id });
+    }
+
     return toPublicFile(updated);
   }
 
@@ -134,6 +160,35 @@ export class FilesService {
       // gone (e.g. a previously-FAILED upload) shouldn't block deletion.
     }
     await prisma.sourceFile.delete({ where: { id: file.id } });
+  }
+
+  /** Null for non-transcribable files or ones whose job hasn't been
+   * created yet — not a 404, since "no job" is an expected, normal state
+   * (e.g. a PDF), not an error. */
+  async getJob(user: AuthenticatedUser, fileId: string): Promise<ProcessingJob | null> {
+    const file = await this.getOwnedFileOrThrow(user, fileId);
+    const job = await prisma.processingJob.findUnique({ where: { sourceFileId: file.id } });
+    if (!job) return null;
+    return {
+      stage: job.stage,
+      errorMessage: job.errorMessage,
+      attempts: job.attempts,
+      updatedAt: job.updatedAt.toISOString(),
+    };
+  }
+
+  /** Null until the job reaches COMPLETED — same "expected absence, not an
+   * error" reasoning as getJob. */
+  async getTranscript(user: AuthenticatedUser, fileId: string): Promise<Transcript | null> {
+    const file = await this.getOwnedFileOrThrow(user, fileId);
+    const transcript = await prisma.transcript.findUnique({ where: { sourceFileId: file.id } });
+    if (!transcript) return null;
+    return {
+      text: transcript.text,
+      language: transcript.language,
+      segments: (transcript.segments ?? []) as Transcript["segments"],
+      createdAt: transcript.createdAt.toISOString(),
+    };
   }
 
   /** Repository-layer org scoping, same pattern as

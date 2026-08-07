@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument --
    supertest's `.body` is untyped `any` by design. */
+import { BullModule } from "@nestjs/bullmq";
 import { INestApplication } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
@@ -47,6 +48,12 @@ describe("FilesController (presign wiring)", () => {
       imports: [
         ConfigModule.forRoot({ isGlobal: true, ignoreEnvFile: true, load: [() => TEST_ENV] }),
         PassportModule,
+        // FilesModule pulls in TranscriptionModule (for the BullMQ queue
+        // it enqueues jobs onto), which needs a root connection registered
+        // somewhere in the tree. This never has to actually reach Redis —
+        // ioredis connects lazily and nothing in these tests touches the
+        // queue (FilesService is overridden below).
+        BullModule.forRoot({ connection: { host: "127.0.0.1", port: 6379, lazyConnect: true } }),
         FilesModule,
       ],
       // JwtAuthGuard needs the "jwt" Passport strategy registered — normally

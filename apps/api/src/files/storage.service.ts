@@ -1,3 +1,5 @@
+import { createWriteStream } from "node:fs";
+import { pipeline } from "node:stream/promises";
 import {
   DeleteObjectCommand,
   GetObjectCommand,
@@ -96,5 +98,17 @@ export class StorageService {
   async deleteObject(key: string): Promise<void> {
     const { client, bucket } = this.requireClient();
     await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: key }));
+  }
+
+  /** Streams the full object to `destPath` — used by the transcription
+   * worker, which needs a real file on disk to hand to the Whisper
+   * subprocess (WHISPER_SETUP.md's contract takes a file path, not stdin). */
+  async downloadToFile(key: string, destPath: string): Promise<void> {
+    const { client, bucket } = this.requireClient();
+    const result = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+    if (!result.Body) {
+      throw new Error(`Storage object ${key} has no body.`);
+    }
+    await pipeline(result.Body as NodeJS.ReadableStream, createWriteStream(destPath));
   }
 }

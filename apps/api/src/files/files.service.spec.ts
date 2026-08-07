@@ -12,6 +12,9 @@ jest.mock("@transcriptioneer/database", () => {
       update: jest.fn(),
       delete: jest.fn(),
     },
+    processingJob: {
+      create: jest.fn().mockResolvedValue(undefined),
+    },
   };
   return { prisma };
 });
@@ -20,9 +23,11 @@ jest.mock("./file-type-loader", () => ({ detectFileType: jest.fn() }));
 
 import { BadRequestException, NotFoundException } from "@nestjs/common";
 import { prisma } from "@transcriptioneer/database";
+import type { Queue } from "bullmq";
 import { detectFileType } from "./file-type-loader";
 import { FilesService } from "./files.service";
 import { StorageService } from "./storage.service";
+import type { TranscriptionJobData } from "../transcription/queue.constants";
 
 type FakeSourceFile = {
   id: string;
@@ -96,6 +101,7 @@ const AUTH_USER_B = {
 
 describe("FilesService", () => {
   let storage: jest.Mocked<StorageService>;
+  let queue: { add: jest.Mock };
   let service: FilesService;
 
   beforeEach(() => {
@@ -111,8 +117,9 @@ describe("FilesService", () => {
       getObjectPrefix: jest.fn().mockResolvedValue(Buffer.from("fake bytes")),
       deleteObject: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<StorageService>;
+    queue = { add: jest.fn().mockResolvedValue(undefined) };
 
-    service = new FilesService(storage);
+    service = new FilesService(storage, queue as unknown as Queue<TranscriptionJobData>);
   });
 
   describe("presignUpload", () => {
@@ -145,6 +152,8 @@ describe("FilesService", () => {
       expect(confirmed.status).toBe("UPLOADED");
       expect(confirmed.sizeBytes).toBe(1234); // real size from storage.headObject
       expect(storage.deleteObject).not.toHaveBeenCalled();
+      // Audio — a transcription job must be enqueued automatically.
+      expect(queue.add).toHaveBeenCalledWith("transcribe", { sourceFileId: file.id });
     });
 
     it("rejects and deletes the object when the real bytes don't match the declared type", async () => {
@@ -189,6 +198,8 @@ describe("FilesService", () => {
 
       const confirmed = await service.confirmUpload(AUTH_USER_A, file.id);
       expect(confirmed.status).toBe("UPLOADED");
+      // Not audio/video — no transcription job.
+      expect(queue.add).not.toHaveBeenCalled();
     });
   });
 

@@ -53,11 +53,49 @@ function ApiStatusDot() {
   );
 }
 
+const TRANSCRIPTION_POLL_INTERVAL_MS = 4000;
+// Whisper's "base" model runs ~2.7x realtime on the VPS's 1 vCPU
+// (WHISPER_SETUP.md) — a 30-minute recording can take over an hour. This
+// is a ceiling on *watching*, not on the job itself, which keeps running
+// either way; the transcript is picked up next time /library polls it
+// (Milestone 8+) even if this tab gives up first.
+const TRANSCRIPTION_POLL_TIMEOUT_MS = 10 * 60 * 1000;
+
+async function pollForTranscription(fileId: string, filename: string) {
+  const deadline = Date.now() + TRANSCRIPTION_POLL_TIMEOUT_MS;
+
+  while (Date.now() < deadline) {
+    await new Promise((resolve) => setTimeout(resolve, TRANSCRIPTION_POLL_INTERVAL_MS));
+
+    const job = await filesService.getJob(fileId).catch(() => null);
+    if (!job) return; // not an audio/video file, or the job vanished
+
+    if (job.stage === "COMPLETED") {
+      const transcript = await filesService.getTranscript(fileId).catch(() => null);
+      const preview = transcript
+        ? `"${transcript.text.slice(0, 120)}${transcript.text.length > 120 ? "…" : ""}"`
+        : "Lista para revisar.";
+      toast({ title: `Transcripción lista: ${filename}`, description: preview, variant: "success" });
+      return;
+    }
+    if (job.stage === "FAILED") {
+      toast({
+        title: `No se pudo transcribir ${filename}`,
+        description: job.errorMessage ?? "Error desconocido.",
+        variant: "error",
+      });
+      return;
+    }
+    // QUEUED or TRANSCRIBING — keep polling.
+  }
+}
+
 async function handleFilesSelected(files: FileList) {
   for (const file of Array.from(files)) {
     try {
-      await filesService.uploadFile(file);
+      const sourceFile = await filesService.uploadFile(file);
       toast({ title: "Archivo recibido", description: `${file.name} se subió correctamente.`, variant: "success" });
+      void pollForTranscription(sourceFile.id, file.name);
     } catch (err) {
       toast({
         title: "No se pudo subir el archivo",

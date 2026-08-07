@@ -5,7 +5,9 @@ import type {
   ApiResponse,
   AuthenticatedUser,
   PresignUploadResponse,
+  ProcessingJob,
   SourceFile,
+  Transcript,
 } from "@transcriptioneer/types";
 import { CurrentUser } from "../auth/current-user.decorator";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
@@ -64,6 +66,24 @@ export class FilesController {
   ): Promise<ApiResponse<{ url: string }>> {
     const url = await this.filesService.getDownloadUrl(user, id);
     return { success: true, data: { url } };
+  }
+
+  @Get(":id/job")
+  async job(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+  ): Promise<ApiResponse<ProcessingJob | null>> {
+    const job = await this.filesService.getJob(user, id);
+    return { success: true, data: job };
+  }
+
+  @Get(":id/transcript")
+  async transcript(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+  ): Promise<ApiResponse<Transcript | null>> {
+    const transcript = await this.filesService.getTranscript(user, id);
+    return { success: true, data: transcript };
   }
 
   @Delete(":id")
