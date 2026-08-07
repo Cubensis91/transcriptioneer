@@ -21,6 +21,12 @@ MILESTONE 4 — FILE UPLOADS — CORE SCOPE COMPLETE, VERIFIED LIVE
   presign/upload/confirm/list/download/delete API, real-magic-byte
   validation, and dashboard wiring all done and confirmed working
   against the real production API/database/storage.
+MILESTONE 5 — AUDIO TRANSCRIPTION — CORE SCOPE COMPLETE, VERIFIED LIVE
+  (started and verified end-to-end 2026-08-07): ProcessingJob/Transcript
+  schema, LocalWhisperProvider (packages/ai), a BullMQ worker triggered
+  automatically on upload confirmation, and dashboard polling/toast all
+  done — verified against the real local Whisper install on the VPS
+  with real synthesized speech, correctly transcribed end-to-end.
 ```
 
 Milestone 2.5 is done: the founder resolved its one open question
@@ -328,6 +334,67 @@ against both, not just against technical completeness.
   screen listing a user's real uploaded files (currently `/library` is
   still mock-data-only, unrelated to this milestone).
 
+### Milestone 5 — Audio transcription (core scope complete, verified live 2026-08-07)
+
+- **Schema**: `ProcessingJob` (one row per `SourceFile` per pipeline run —
+  `stage`: `QUEUED`/`TRANSCRIBING`/`COMPLETED`/`FAILED`, plus
+  `errorMessage`/`attempts`) and `Transcript` (`text`, `language`,
+  `segments` JSON — raw Whisper timestamp/speaker data preserved as-is,
+  not normalized into rows yet). Migration
+  `20260807201352_add_processing_job_and_transcript`, generated offline
+  and applied to the live database, same pattern as every prior migration.
+- **First real service in `packages/ai`**: `LocalWhisperProvider`,
+  implementing a `TranscriptionProvider` interface so a future OpenAI/
+  Gemini/Deepgram provider is a new class, not a rewrite of every caller
+  (`WHISPER_SETUP.md`'s documented intent). Shells out to `transcribe.py`
+  per its documented stdout-JSON contract; wraps the process with
+  `ionice`/`nice` on Linux specifically because the VPS has 1 vCPU — a
+  transcription job must never starve the API's own request handling on
+  the same box.
+- **API** (`apps/api/src/transcription/`): a BullMQ queue + `WorkerHost`
+  processor, collocated in the same PM2 process as the API for now
+  (splittable into its own process later per `ARCHITECTURE.md` §10, once
+  load justifies it — not needed yet). `concurrency: 1` is load-bearing,
+  not a style choice: Whisper's "base" model peaks at ~700MB RSS while
+  loaded on a 3.8GB box (`WHISPER_SETUP.md`) — two transcriptions at once
+  risks OOM. `FilesService.confirmUpload` enqueues a job automatically for
+  audio/video `SourceFile`s only (Whisper decodes a video's audio track
+  natively via ffmpeg, so no separate extraction step). New endpoints:
+  `GET /api/v1/files/:id/job` and `GET /api/v1/files/:id/transcript`
+  (both `null`, not 404, when not applicable — "no job" is an expected
+  state for a PDF, not an error).
+- **Resilience**: Redis, Whisper, and storage are all optional at boot —
+  same pattern as Google OAuth — so the app never crashes for lack of any
+  of them; a transcription job just fails with a clear `errorMessage`
+  instead.
+- **apps/web**: uploading now polls `GET /files/:id/job` every 4s (10-
+  minute ceiling on the *tab watching*, not the job — it keeps running
+  either way) and toasts a transcript preview or the real failure reason
+  when it lands, wired into the dashboard's `IntakeThreshold`.
+- **Full live verification** against `https://app.transcriptioneer.online`
+  and the real VPS Whisper install: generated real synthesized speech
+  (`espeak-ng` + `ffmpeg`, not a silent/empty file) — confirmed
+  `transcribe.py` itself works directly first (16.7s for a 6s clip), then
+  drove the *actual* pipeline via `curl`: register → presign → upload →
+  confirm (auto-enqueues) → `GET /job` reached `COMPLETED` → `GET
+  /transcript` returned the correct real text/language/segments matching
+  the direct Whisper run. Also confirmed a `text/plain` upload correctly
+  gets no `ProcessingJob` at all (`GET /job` → `null`). All test
+  accounts/files/storage objects cleaned up afterward — no leftover data
+  in production.
+- 15 new tests: `LocalWhisperProvider` (subprocess success/failure/
+  malformed-output/spawn-failure/nice-ionice-wrapping), `Transcription
+  Processor` (success, unconfigured provider, Whisper failure + rethrow,
+  vanished `SourceFile`), and `FilesService` (job enqueued for audio, not
+  for non-audio). `pnpm typecheck/lint/test` clean across the monorepo
+  (except the same pre-existing, unrelated stale-copy test).
+- **Not yet done:** everything past "the transcript exists in Postgres" —
+  showing it anywhere in the UI beyond a toast (no `/library`-type screen
+  reads real data yet, Milestone 8+), retry logic for `FAILED` jobs
+  (currently a dead end until someone re-uploads), and splitting the
+  worker into its own process (fine to defer until load actually demands
+  it).
+
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
 `VISUAL_IDENTITY.md`, including the founder's 2026-07-29 mandatory-skeuomorphism
@@ -359,7 +426,8 @@ future unification decision.
   scope done and verified live end-to-end 2026-08-05**; see above
 - ~~File uploads (Milestone 4)~~ — **core scope done and verified live
   end-to-end 2026-08-07**; see above
-- Audio transcription (Milestone 5)
+- ~~Audio transcription (Milestone 5)~~ — **core scope done and verified
+  live end-to-end 2026-08-07**; see above
 - AI analysis / OpenAI integration (Milestone 5/6)
 - Document processing (Milestone 7)
 - Knowledge library, semantic search, AI chat (Milestones 8–10)
@@ -465,19 +533,21 @@ curl http://localhost:4000/health   # expect "status":"ok", not "degraded"
 ## Next milestone
 
 ```
-MILESTONE 5 — AUDIO TRANSCRIPTION
+MILESTONE 6 — AI ANALYSIS
 ```
 
-Milestone 4's core scope (`SourceFile` schema, presign/upload/confirm/list/
-download/delete API, real magic-byte validation, dashboard wiring) is done
-and verified live end-to-end against production, including a real curl-driven
-upload/download/delete cycle and a real disguised-executable rejection — see
-"Milestone 4 — File uploads" above. Per the product roadmap
-(`ARCHITECTURE.md` §12/§6): wire the local Whisper installation already
-validated on the VPS (`WHISPER_SETUP.md`) into `apps/api`, most likely via a
-`ProcessingJob` model + BullMQ worker picking up newly-`UPLOADED`
-`SourceFile` rows (Redis is already provisioned) and producing a
-`Transcript` row per file.
+Milestone 5's core scope (`ProcessingJob`/`Transcript` schema,
+`LocalWhisperProvider`, BullMQ worker, dashboard polling) is done and
+verified live end-to-end against production, including a real
+speech-to-text run through the actual Whisper install on the VPS — see
+"Milestone 5 — Audio transcription" above. Per the product roadmap
+(`ARCHITECTURE.md` §6/§12): `aiAnalysisService` — a structured-output call
+(OpenAI, the first real use of an `OPENAI_API_KEY` in this repo) against a
+Zod-validated schema matching the `KnowledgeItem` shape (summary, topics,
+tasks, decisions, etc. — ARCHITECTURE.md §4), triggered once a
+`Transcript` exists, same enqueue-on-completion pattern Milestone 5 already
+established. Invalid model output gets one bounded retry with the
+validation error fed back before failing.
 
 ## Exact recommended first task when development resumes
 
@@ -495,8 +565,12 @@ validated on the VPS (`WHISPER_SETUP.md`) into `apps/api`, most likely via a
    `IntakeThreshold`'s real file picker once (the automated browser tooling
    can't set `<input type="file">` programmatically — a tooling limit, not
    a code gap; the service layer underneath is fully verified via curl).
-5. Start Milestone 5 (audio transcription) per `ARCHITECTURE.md` §4/§6:
-   `ProcessingJob` Prisma model, a BullMQ worker triggered on upload
-   confirmation, and wiring the already-validated local Whisper install
-   (`WHISPER_SETUP.md`) to actually transcribe `UPLOADED` `SourceFile` rows
-   into `Transcript` rows.
+5. ~~Start Milestone 5 (audio transcription)~~ — **done 2026-08-07**,
+   verified live end-to-end against the real Whisper install on the VPS
+   (see above). Not blocking, worth doing eventually: retry logic for
+   `FAILED` jobs, and splitting the worker into its own PM2 process once
+   load justifies it.
+6. Start Milestone 6 (AI analysis) per `ARCHITECTURE.md` §4/§6: get a real
+   `OPENAI_API_KEY` (still unset — `.env.example` has it commented out),
+   `KnowledgeItem` + related Prisma models, and `aiAnalysisService` in
+   `packages/ai` triggered on `Transcript` completion.
