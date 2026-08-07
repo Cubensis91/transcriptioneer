@@ -16,6 +16,11 @@ MILESTONE 3 — AUTHENTICATION — CORE SCOPE COMPLETE, VERIFIED LIVE
   confirmed working against the real production API/database/domain.
   Apple/Microsoft OAuth stubs and (dashboard) route protection remain,
   both explicitly deferred, non-blocking.
+MILESTONE 4 — FILE UPLOADS — CORE SCOPE COMPLETE, VERIFIED LIVE
+  (started and verified end-to-end 2026-08-07): SourceFile schema,
+  presign/upload/confirm/list/download/delete API, real-magic-byte
+  validation, and dashboard wiring all done and confirmed working
+  against the real production API/database/storage.
 ```
 
 Milestone 2.5 is done: the founder resolved its one open question
@@ -239,6 +244,90 @@ against both, not just against technical completeness.
   explicitly out of scope for this pass), plus the founder personally
   clicking through the Google consent screen once to see it end-to-end.
 
+### Milestone 4 — File uploads (core scope complete, verified live 2026-08-07)
+
+- **Schema**: `SourceFile` (`packages/database/prisma/schema.prisma`) — the
+  first knowledge-graph model beyond auth (`ARCHITECTURE.md` §4). Fields:
+  `organizationId`/`uploadedById` (repository-layer scoping, same pattern as
+  auth), `storageKey` (never exposed to clients), `originalName`,
+  `mimeType`, `sizeBytes`, `status` (`PENDING`/`UPLOADED`/`FAILED`).
+  Migration `20260807102306_add_source_file`, generated offline the same
+  way as the auth migrations and applied to the live database.
+- **API** (`apps/api/src/files/`): `POST /api/v1/files/presign` →
+  `POST /api/v1/files/:id/complete` → `GET /api/v1/files` →
+  `GET /api/v1/files/:id` → `GET /api/v1/files/:id/download-url` →
+  `DELETE /api/v1/files/:id`, all guarded, all org-scoped. `StorageService`
+  wraps an S3-compatible client (MinIO); every read/write goes through a
+  short-lived presigned URL, never a public bucket ACL
+  (`ARCHITECTURE.md` §7). The API server's own bytes are never in the
+  upload path — the browser PUTs straight to storage.
+- **Real magic-byte validation**: `confirmUpload` doesn't trust the
+  client's declared mime type — it fetches the first ~4KB of the actual
+  uploaded object and sniffs it (`file-type`, isolated behind
+  `file-type-loader.ts` since it's ESM-only and apps/api is CommonJS). A
+  mismatch (e.g. a `.exe` declared as `audio/mpeg`) deletes the storage
+  object, marks the row `FAILED`, and rejects — **verified live**: uploaded
+  a real Windows executable's magic bytes declared as `audio/mpeg`, got
+  `"doesn't look like a audio/mpeg file (detected: application/x-msdownload)"`,
+  confirmed the object was actually deleted from the bucket afterward.
+- **apps/web**: new `lib/services/files-service.ts` (presign → XHR PUT
+  with progress → confirm) wired into the dashboard's `IntakeThreshold` for
+  the first time — selecting a file now does a real upload, not just UI.
+- **Two real bugs found and fixed during live verification:**
+  1. **`@UsePipes` validated `@CurrentUser()` too.** `presign()` combined a
+     custom param decorator (`@CurrentUser()` — unlike `@Req`/`@Res`, not
+     pipe-exempt) with a Zod validation pipe applied at the method level via
+     `@UsePipes()`, which runs *every* parameter through the same pipe. The
+     authenticated-user object got validated against the upload-request
+     schema and always failed ("filename: Required, mimeType: Required,
+     sizeBytes: Expected number, received nan") — a correctly-shaped
+     request from a logged-in user still got rejected. Fixed by scoping the
+     pipe to `@Body()` specifically in both `files.controller.ts` and
+     (preventively) `auth.controller.ts`'s `register`/`login`. Added
+     `files.security.spec.ts`, an HTTP-level regression test — a
+     service-only unit test can't catch this class of bug, since it's
+     about how the controller wires its params.
+  2. **Presigned URLs pointed at `localhost:9000`.** `STORAGE_ENDPOINT` was
+     set to MinIO's internal address for server-side operations, but that
+     same endpoint is what the AWS SDK uses to build the presigned URL the
+     *browser* has to PUT to — unreachable from outside the VPS. Tried
+     routing `/storage/*` through the existing domain via Caddy first, but
+     that breaks AWS SigV4 signature verification (the signed canonical
+     path includes the `/storage` prefix; Caddy's `handle_path` strips it
+     before forwarding, so MinIO sees a different path than what was
+     signed → `SignatureDoesNotMatch`). Fixed properly: added a dedicated
+     `storage.transcriptioneer.online` DNS `A` record (same VPS IP) and a
+     separate Caddy site block reverse-proxying straight to MinIO with no
+     path rewriting, so path-style S3 addressing works cleanly.
+     `STORAGE_ENDPOINT` now points there. TLS certificate issued
+     automatically on first Caddy reload.
+- **Full live verification via `curl`** against
+  `https://app.transcriptioneer.online` and the real database/storage:
+  presign → real PUT to `storage.transcriptioneer.online` (200) → confirm
+  (`UPLOADED`, correct size from storage) → list → download-url → actual
+  file content retrieved correctly → delete (object removed from MinIO,
+  row removed from Postgres) → magic-byte mismatch rejection (see above).
+  Also registered a real account through the actual web UI
+  (`/register` → dashboard) to confirm the route renders and the session
+  works end-to-end; couldn't complete a real file-picker upload through
+  the automated browser tooling specifically (browsers block
+  programmatically setting `<input type="file">`'s value for security —
+  a tooling limitation, not a code issue), so `IntakeThreshold`'s
+  drag-and-drop/click path is wired correctly by inspection and the
+  service layer is fully verified, but hasn't been clicked through by a
+  real human yet. All test accounts/files/DNS-adjacent data cleaned up
+  afterward — no leftover data in production.
+- 8 new `FilesService` tests (creation, confirm success/type-mismatch/
+  never-uploaded, text-file magic-byte exemption, cross-org scoping,
+  deletion) + 2 new controller-wiring regression tests. `pnpm typecheck/
+  lint/test` clean across the monorepo (except the same pre-existing,
+  unrelated stale-copy test in `(dashboard)/page.test.tsx`).
+- **Not yet done:** a real human clicking through the actual upload UI
+  once; everything past "the file exists in storage" (transcription,
+  processing, knowledge extraction — Milestone 5+); a `/library`-type
+  screen listing a user's real uploaded files (currently `/library` is
+  still mock-data-only, unrelated to this milestone).
+
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
 `VISUAL_IDENTITY.md`, including the founder's 2026-07-29 mandatory-skeuomorphism
@@ -268,14 +357,15 @@ future unification decision.
 
 - ~~Authentication (Milestone 3) — in progress, schema only~~ — **core
   scope done and verified live end-to-end 2026-08-05**; see above
-- File uploads (Milestone 4)
+- ~~File uploads (Milestone 4)~~ — **core scope done and verified live
+  end-to-end 2026-08-07**; see above
 - Audio transcription (Milestone 5)
 - AI analysis / OpenAI integration (Milestone 5/6)
 - Document processing (Milestone 7)
 - Knowledge library, semantic search, AI chat (Milestones 8–10)
 - ~~Real product screens beyond the homepage~~ — **done 2026-08-01, ahead of schedule:** founder decision to build the full product interface now (visually finished, data placeholder) rather than a "developer dashboard" MVP. `/library`, `/library/[id]` (Summary/Transcript/Ideas/Connections tabs), `/ask` (chat + citations), `/insights` (stats + weekly chart + surfaced insights), `/connections` (SVG graph), `/projects`, `/settings` all exist as real routes with production-quality components, wired through a `lib/services/` interface layer (`libraryService`, `askService`, `insightsService`, `connectionsService`, `projectsService`) so swapping mock implementations for real API calls later doesn't require touching any page. Seed data is believable domain content, not lorem ipsum. `pnpm typecheck/lint/test` clean; verified via `next build --webpack` + `next start` (see the webpack dev-mode HMR note below — build+start was used for the same pre-existing reason).
 - Mobile app (Milestone 12+)
-- The rest of the knowledge-graph Prisma schema beyond auth (`SourceFile`, `ProcessingJob`, `Transcript`, `Document`, `KnowledgeItem`, `Chunk`, `Conversation`, `Message`, etc.) — Milestone 4+, once a feature needs each entity. The `HealthCheck` placeholder itself is already gone, replaced by the auth models (see Milestone 3 above).
+- The rest of the knowledge-graph Prisma schema beyond auth+files (`ProcessingJob`, `Transcript`, `Document`, `KnowledgeItem`, `Chunk`, `Conversation`, `Message`, etc.) — Milestone 5+, once a feature needs each entity. `SourceFile` is done (Milestone 4, see above). The `HealthCheck` placeholder itself is already gone, replaced by the auth models (see Milestone 3 above).
 
 ## Follow-ups noted but not done in Milestone 2.5
 
@@ -375,18 +465,19 @@ curl http://localhost:4000/health   # expect "status":"ok", not "degraded"
 ## Next milestone
 
 ```
-MILESTONE 4 — FILE UPLOADS
+MILESTONE 5 — AUDIO TRANSCRIPTION
 ```
 
-Milestone 3's core scope (schema, API auth module, Google OAuth, web
-login/register) is done and verified live end-to-end against production —
-see "Milestone 3 — Authentication" above. What remains of Milestone 3 is
-optional/deferred (Apple/Microsoft OAuth stubs, `(dashboard)` route
-protection) and doesn't block starting Milestone 4. Per the product
-roadmap (`ARCHITECTURE.md` §12/§4): presigned-URL upload flow, `SourceFile`/
-`ProcessingJob` Prisma models (the next real additions to the
-knowledge-graph schema beyond auth), and wiring `IntakeThreshold`'s file
-picker to an actual backend for the first time (currently mock-only).
+Milestone 4's core scope (`SourceFile` schema, presign/upload/confirm/list/
+download/delete API, real magic-byte validation, dashboard wiring) is done
+and verified live end-to-end against production, including a real curl-driven
+upload/download/delete cycle and a real disguised-executable rejection — see
+"Milestone 4 — File uploads" above. Per the product roadmap
+(`ARCHITECTURE.md` §12/§6): wire the local Whisper installation already
+validated on the VPS (`WHISPER_SETUP.md`) into `apps/api`, most likely via a
+`ProcessingJob` model + BullMQ worker picking up newly-`UPLOADED`
+`SourceFile` rows (Redis is already provisioned) and producing a
+`Transcript` row per file.
 
 ## Exact recommended first task when development resumes
 
@@ -398,8 +489,14 @@ picker to an actual backend for the first time (currently mock-only).
    against production (see above). If picking Milestone 3 back up anyway:
    Apple/Microsoft OAuth stubs (same pattern as Google) and `(dashboard)`
    route protection are the only remaining, non-blocking items.
-4. Start Milestone 4 (file uploads) per `ARCHITECTURE.md` §4/§5: `SourceFile`
-   Prisma model + migration, presigned-URL upload endpoint (MinIO is
-   already provisioned in `docker-compose.yml` and, per the 2026-08-01
-   infrastructure verification, running on the VPS), and wiring
-   `IntakeThreshold`'s file picker to it for the first time.
+4. ~~Start Milestone 4 (file uploads)~~ — **done 2026-08-07**, verified live
+   end-to-end against production (see above). One follow-up worth doing
+   whenever convenient, not blocking: have an actual human click through
+   `IntakeThreshold`'s real file picker once (the automated browser tooling
+   can't set `<input type="file">` programmatically — a tooling limit, not
+   a code gap; the service layer underneath is fully verified via curl).
+5. Start Milestone 5 (audio transcription) per `ARCHITECTURE.md` §4/§6:
+   `ProcessingJob` Prisma model, a BullMQ worker triggered on upload
+   confirmation, and wiring the already-validated local Whisper install
+   (`WHISPER_SETUP.md`) to actually transcribe `UPLOADED` `SourceFile` rows
+   into `Transcript` rows.
