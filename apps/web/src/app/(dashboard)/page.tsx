@@ -1,7 +1,7 @@
 "use client";
 
 import { ApiClientError, createApiClient } from "@transcriptioneer/api-client";
-import type { HealthStatus } from "@transcriptioneer/types";
+import type { HealthStatus, KnowledgeItem } from "@transcriptioneer/types";
 import { Avatar, Card, CardContent, ThemeToggleButton, cn, toast } from "@transcriptioneer/ui";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import { PanelChromeHeader } from "@/components/chrome/panel-chrome-header";
 import { ProcessStepper } from "@/components/dashboard/process-stepper";
 import { QuickInsightsPanel } from "@/components/dashboard/quick-insights-panel";
 import { processingStageToVisualState } from "@/components/file-state/file-state-meta";
+import { KnowledgeItemDialog } from "@/components/knowledge/knowledge-item-dialog";
 import { NotificationsButton } from "@/components/navigation/notifications-button";
 import { IntakeThreshold } from "@/components/upload/intake-threshold";
 import { filesService } from "@/lib/services/files-service";
@@ -61,7 +62,14 @@ const TRANSCRIPTION_POLL_INTERVAL_MS = 4000;
 // (Milestone 8+) even if this tab gives up first.
 const TRANSCRIPTION_POLL_TIMEOUT_MS = 10 * 60 * 1000;
 
-async function pollForTranscription(fileId: string, filename: string) {
+// COMPLETED now means the *whole* pipeline finished, not just transcription
+// (ARCHITECTURE.md §6: transcribing → analyzing → completed) — the job
+// stays QUEUED/TRANSCRIBING/ANALYZING while aiAnalysisService runs.
+async function pollForAnalysis(
+  fileId: string,
+  filename: string,
+  onReady: (item: KnowledgeItem) => void,
+) {
   const deadline = Date.now() + TRANSCRIPTION_POLL_TIMEOUT_MS;
 
   while (Date.now() < deadline) {
@@ -71,31 +79,36 @@ async function pollForTranscription(fileId: string, filename: string) {
     if (!job) return; // not an audio/video file, or the job vanished
 
     if (job.stage === "COMPLETED") {
-      const transcript = await filesService.getTranscript(fileId).catch(() => null);
-      const preview = transcript
-        ? `"${transcript.text.slice(0, 120)}${transcript.text.length > 120 ? "…" : ""}"`
-        : "Lista para revisar.";
-      toast({ title: `Transcripción lista: ${filename}`, description: preview, variant: "success" });
+      const item = await filesService.getKnowledgeItem(fileId).catch(() => null);
+      if (item) {
+        toast({ title: `Listo: ${filename}`, description: item.summary, variant: "success" });
+        onReady(item);
+      } else {
+        toast({ title: `Procesado: ${filename}`, description: "Lista para revisar.", variant: "success" });
+      }
       return;
     }
     if (job.stage === "FAILED") {
       toast({
-        title: `No se pudo transcribir ${filename}`,
+        title: `No se pudo procesar ${filename}`,
         description: job.errorMessage ?? "Error desconocido.",
         variant: "error",
       });
       return;
     }
-    // QUEUED or TRANSCRIBING — keep polling.
+    // QUEUED, TRANSCRIBING, or ANALYZING — keep polling.
   }
 }
 
-async function handleFilesSelected(files: FileList) {
+async function handleFilesSelected(
+  files: FileList,
+  onAnalyzed: (filename: string, item: KnowledgeItem) => void,
+) {
   for (const file of Array.from(files)) {
     try {
       const sourceFile = await filesService.uploadFile(file);
       toast({ title: "Archivo recibido", description: `${file.name} se subió correctamente.`, variant: "success" });
-      void pollForTranscription(sourceFile.id, file.name);
+      void pollForAnalysis(sourceFile.id, file.name, (item) => onAnalyzed(file.name, item));
     } catch (err) {
       toast({
         title: "No se pudo subir el archivo",
@@ -109,6 +122,7 @@ async function handleFilesSelected(files: FileList) {
 export default function Home() {
   const { resolvedTheme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [analyzedFile, setAnalyzedFile] = useState<{ filename: string; item: KnowledgeItem } | null>(null);
 
   // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
@@ -135,7 +149,18 @@ export default function Home() {
         <IntakeThreshold
           size="hero"
           className="mx-auto w-full max-w-3xl"
-          onFilesSelected={(files) => void handleFilesSelected(files)}
+          onFilesSelected={(files) =>
+            void handleFilesSelected(files, (filename, item) => setAnalyzedFile({ filename, item }))
+          }
+        />
+
+        <KnowledgeItemDialog
+          item={analyzedFile?.item ?? null}
+          filename={analyzedFile?.filename ?? ""}
+          open={analyzedFile !== null}
+          onOpenChange={(open) => {
+            if (!open) setAnalyzedFile(null);
+          }}
         />
 
         <div className="mx-auto grid w-full max-w-6xl gap-6 lg:grid-cols-[1fr_20rem]">

@@ -46,6 +46,12 @@ export const envSchema = z.object({
   WHISPER_PYTHON_BIN: z.string().min(1).optional(),
   WHISPER_SCRIPT_PATH: z.string().min(1).optional(),
   WHISPER_MODEL: z.string().min(1).default("base"),
+
+  // Optional, same pattern as Whisper above: the app boots fine without it,
+  // and the analysis worker marks the job FAILED with a clear message
+  // instead of crashing. First real use of the OpenAI SDK (Milestone 6).
+  OPENAI_API_KEY: z.string().min(1).optional(),
+  OPENAI_MODEL: z.string().min(1).default("gpt-4o-mini"),
 });
 
 export type Env = z.infer<typeof envSchema>;

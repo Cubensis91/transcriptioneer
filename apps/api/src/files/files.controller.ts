@@ -4,6 +4,7 @@ import type { PresignUploadInput } from "@transcriptioneer/validation";
 import type {
   ApiResponse,
   AuthenticatedUser,
+  KnowledgeItem,
   PresignUploadResponse,
   ProcessingJob,
   SourceFile,
@@ -84,6 +85,15 @@ export class FilesController {
   ): Promise<ApiResponse<Transcript | null>> {
     const transcript = await this.filesService.getTranscript(user, id);
     return { success: true, data: transcript };
+  }
+
+  @Get(":id/knowledge-item")
+  async knowledgeItem(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param("id") id: string,
+  ): Promise<ApiResponse<KnowledgeItem | null>> {
+    const item = await this.filesService.getKnowledgeItem(user, id);
+    return { success: true, data: item };
   }
 
   @Delete(":id")

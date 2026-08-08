@@ -32,6 +32,7 @@ function makeJob(): Job<{ sourceFileId: string }> {
 
 describe("TranscriptionProcessor", () => {
   let storage: jest.Mocked<StorageService>;
+  let analysisQueue: { add: jest.Mock };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -39,9 +40,10 @@ describe("TranscriptionProcessor", () => {
     storage = {
       downloadToFile: jest.fn().mockResolvedValue(undefined),
     } as unknown as jest.Mocked<StorageService>;
+    analysisQueue = { add: jest.fn().mockResolvedValue(undefined) };
   });
 
-  it("transcribes, stores the Transcript, and marks the job COMPLETED", async () => {
+  it("transcribes, stores the Transcript, marks the job ANALYZING, and enqueues analysis", async () => {
     const whisperProvider: TranscriptionProvider = {
       transcribe: jest.fn().mockResolvedValue({
         text: "Hello world.",
@@ -49,7 +51,7 @@ describe("TranscriptionProcessor", () => {
         segments: [{ start: 0, end: 1, text: "Hello world." }],
       }),
     };
-    const processor = new TranscriptionProcessor(storage, whisperProvider);
+    const processor = new TranscriptionProcessor(storage, whisperProvider, analysisQueue as never);
 
     await processor.process(makeJob());
 
@@ -67,12 +69,13 @@ describe("TranscriptionProcessor", () => {
     });
     expect(prisma.processingJob.update).toHaveBeenCalledWith({
       where: { sourceFileId: SOURCE_FILE.id },
-      data: { stage: "COMPLETED" },
+      data: { stage: "ANALYZING" },
     });
+    expect(analysisQueue.add).toHaveBeenCalledWith("analyze", { sourceFileId: SOURCE_FILE.id });
   });
 
   it("marks the job FAILED without touching storage when no provider is configured", async () => {
-    const processor = new TranscriptionProcessor(storage, null);
+    const processor = new TranscriptionProcessor(storage, null, analysisQueue as never);
 
     await processor.process(makeJob());
 
@@ -85,13 +88,14 @@ describe("TranscriptionProcessor", () => {
         attempts: { increment: 1 },
       },
     });
+    expect(analysisQueue.add).not.toHaveBeenCalled();
   });
 
   it("marks the job FAILED with the real error message and rethrows when Whisper fails", async () => {
     const whisperProvider: TranscriptionProvider = {
       transcribe: jest.fn().mockRejectedValue(new Error("Could not decode audio.")),
     };
-    const processor = new TranscriptionProcessor(storage, whisperProvider);
+    const processor = new TranscriptionProcessor(storage, whisperProvider, analysisQueue as never);
 
     await expect(processor.process(makeJob())).rejects.toThrow("Could not decode audio.");
 
@@ -103,16 +107,18 @@ describe("TranscriptionProcessor", () => {
         attempts: { increment: 1 },
       },
     });
+    expect(analysisQueue.add).not.toHaveBeenCalled();
   });
 
   it("skips silently if the SourceFile no longer exists", async () => {
     (prisma.sourceFile.findUnique as jest.Mock).mockResolvedValue(null);
     const whisperProvider: TranscriptionProvider = { transcribe: jest.fn() };
-    const processor = new TranscriptionProcessor(storage, whisperProvider);
+    const processor = new TranscriptionProcessor(storage, whisperProvider, analysisQueue as never);
 
     await processor.process(makeJob());
 
     expect(whisperProvider.transcribe).not.toHaveBeenCalled();
     expect(prisma.processingJob.update).not.toHaveBeenCalled();
+    expect(analysisQueue.add).not.toHaveBeenCalled();
   });
 });

@@ -13,13 +13,15 @@
  * runtime check is defense-in-depth for the one case those two can't catch:
  * code that actually executes inside a real browser tab.
  *
- * Milestone 1 scope was boundary + package wiring only. Milestone 5 is the
- * first real service: transcription, via a local Whisper subprocess (see
- * WHISPER_SETUP.md) — not the OpenAI SDK yet, since a local install was
- * already validated on the VPS and costs nothing per transcription. The
- * remaining services (documentExtractionService, aiAnalysisService,
- * embeddingsService, retrievalService, chatService — ARCHITECTURE.md §6)
- * land incrementally starting Milestone 6+.
+ * Milestone 1 scope was boundary + package wiring only. Milestone 5 added
+ * the first real service: transcription, via a local Whisper subprocess
+ * (see WHISPER_SETUP.md) — not the OpenAI SDK, since a local install was
+ * already validated on the VPS and costs nothing per transcription.
+ * Milestone 6 is the first real use of the OpenAI SDK/OPENAI_API_KEY:
+ * aiAnalysisService (OpenAiAnalysisService below), a structured-output call
+ * against a Zod schema matching the KnowledgeItem shape. The remaining
+ * services (documentExtractionService, embeddingsService, retrievalService,
+ * chatService — ARCHITECTURE.md §6) land incrementally starting Milestone 7+.
  */
 // `"window" in globalThis` (rather than `typeof window`) so this typechecks
 // under this package's Node-only `lib` (no DOM types) while still detecting
@@ -35,3 +37,5 @@ export const AI_PACKAGE_BOUNDARY = "server-only" as const;
 
 export * from "./transcription/types";
 export * from "./transcription/whisper-provider";
+export * from "./analysis/types";
+export * from "./analysis/openai-analysis-provider";

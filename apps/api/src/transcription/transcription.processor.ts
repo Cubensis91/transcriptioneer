@@ -2,11 +2,12 @@ import { randomUUID } from "node:crypto";
 import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { extname, join } from "node:path";
-import { Processor, WorkerHost } from "@nestjs/bullmq";
+import { InjectQueue, Processor, WorkerHost } from "@nestjs/bullmq";
 import { Inject, Logger } from "@nestjs/common";
 import { prisma } from "@transcriptioneer/database";
 import type { TranscriptionProvider } from "@transcriptioneer/ai";
-import type { Job } from "bullmq";
+import type { Job, Queue } from "bullmq";
+import { ANALYSIS_QUEUE, type AnalysisJobData } from "../analysis/queue.constants";
 import { StorageService } from "../files/storage.service";
 import { TRANSCRIPTION_QUEUE, type TranscriptionJobData } from "./queue.constants";
 import { WHISPER_PROVIDER } from "./whisper-provider.provider";
@@ -22,6 +23,7 @@ export class TranscriptionProcessor extends WorkerHost {
   constructor(
     private readonly storage: StorageService,
     @Inject(WHISPER_PROVIDER) private readonly whisperProvider: TranscriptionProvider | null,
+    @InjectQueue(ANALYSIS_QUEUE) private readonly analysisQueue: Queue<AnalysisJobData>,
   ) {
     super();
   }
@@ -59,8 +61,12 @@ export class TranscriptionProcessor extends WorkerHost {
             segments: result.segments,
           },
         }),
-        prisma.processingJob.update({ where: { sourceFileId }, data: { stage: "COMPLETED" } }),
+        // ANALYZING, not COMPLETED: the pipeline continues into
+        // aiAnalysisService (ARCHITECTURE.md §6's state machine —
+        // transcribing → analyzing → completed).
+        prisma.processingJob.update({ where: { sourceFileId }, data: { stage: "ANALYZING" } }),
       ]);
+      await this.analysisQueue.add("analyze", { sourceFileId });
     } catch (error) {
       await this.markFailed(
         sourceFileId,

@@ -80,7 +80,7 @@ export type PresignUploadResponse = {
   uploadUrl: string;
 };
 
-export type ProcessingStage = "QUEUED" | "TRANSCRIBING" | "COMPLETED" | "FAILED";
+export type ProcessingStage = "QUEUED" | "TRANSCRIBING" | "ANALYZING" | "COMPLETED" | "FAILED";
 
 /** Only exists for audio/video SourceFiles — created the moment a
  *  transcription job is enqueued (ARCHITECTURE.md §6's state machine). */
@@ -101,5 +101,52 @@ export type Transcript = {
   text: string;
   language: string | null;
   segments: TranscriptSegment[];
+  createdAt: string;
+};
+
+/** Milestone 6's structured AI output (ARCHITECTURE.md §4). Mirrors
+ *  @transcriptioneer/ai's `AnalysisResult` shape, plus the persisted
+ *  metadata (id/createdAt) — kept as a distinct type since `packages/ai`
+ *  is server-only and this one is safe to send to the browser. */
+export type KnowledgeItemMention = {
+  name: string;
+  context: string | null;
+};
+
+export type KnowledgeItemEventDate = {
+  label: string;
+  rawText: string;
+  isoDate: string | null;
+};
+
+export type KnowledgeItemTask = {
+  text: string;
+  status: "OPEN" | "DONE";
+  assignee: string | null;
+};
+
+export type KnowledgeItemQuote = {
+  text: string;
+  speaker: string | null;
+};
+
+export type KnowledgeItem = {
+  id: string;
+  title: string;
+  summary: string;
+  detailedSummary: string;
+  topics: string[];
+  keywords: string[];
+  tags: string[];
+  people: KnowledgeItemMention[];
+  organizations: KnowledgeItemMention[];
+  locations: KnowledgeItemMention[];
+  eventDates: KnowledgeItemEventDate[];
+  decisions: string[];
+  tasks: KnowledgeItemTask[];
+  questions: string[];
+  openIssues: string[];
+  facts: string[];
+  quotes: KnowledgeItemQuote[];
   createdAt: string;
 };

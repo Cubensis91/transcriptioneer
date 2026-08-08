@@ -4,6 +4,7 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { prisma } from "@transcriptioneer/database";
 import type {
   AuthenticatedUser,
+  KnowledgeItem,
   PresignUploadResponse,
   ProcessingJob,
   SourceFile,
@@ -188,6 +189,58 @@ export class FilesService {
       language: transcript.language,
       segments: (transcript.segments ?? []) as Transcript["segments"],
       createdAt: transcript.createdAt.toISOString(),
+    };
+  }
+
+  /** Null until the analysis job reaches COMPLETED — same "expected
+   * absence, not an error" reasoning as getJob/getTranscript. */
+  async getKnowledgeItem(user: AuthenticatedUser, fileId: string): Promise<KnowledgeItem | null> {
+    const file = await this.getOwnedFileOrThrow(user, fileId);
+    const item = await prisma.knowledgeItem.findUnique({
+      where: { sourceFileId: file.id },
+      include: {
+        topics: { include: { topic: true } },
+        keywords: { include: { keyword: true } },
+        tags: { include: { tag: true } },
+        people: { include: { person: true } },
+        organizations: { include: { organization: true } },
+        locations: { include: { location: true } },
+        eventDates: true,
+        decisions: true,
+        tasks: true,
+        questions: true,
+        openIssues: true,
+        facts: true,
+        quotes: true,
+      },
+    });
+    if (!item) return null;
+    return {
+      id: item.id,
+      title: item.title,
+      summary: item.summary,
+      detailedSummary: item.detailedSummary,
+      topics: item.topics.map((t) => t.topic.name),
+      keywords: item.keywords.map((k) => k.keyword.name),
+      tags: item.tags.map((t) => t.tag.name),
+      people: item.people.map((p) => ({ name: p.person.name, context: p.context })),
+      organizations: item.organizations.map((o) => ({
+        name: o.organization.name,
+        context: o.context,
+      })),
+      locations: item.locations.map((l) => ({ name: l.location.name, context: l.context })),
+      eventDates: item.eventDates.map((e) => ({
+        label: e.label,
+        rawText: e.rawText,
+        isoDate: e.date ? e.date.toISOString().slice(0, 10) : null,
+      })),
+      decisions: item.decisions.map((d) => d.text),
+      tasks: item.tasks.map((t) => ({ text: t.text, status: t.status, assignee: t.assignee })),
+      questions: item.questions.map((q) => q.text),
+      openIssues: item.openIssues.map((o) => o.text),
+      facts: item.facts.map((f) => f.text),
+      quotes: item.quotes.map((q) => ({ text: q.text, speaker: q.speaker })),
+      createdAt: item.createdAt.toISOString(),
     };
   }
 

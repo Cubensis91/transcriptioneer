@@ -1,5 +1,11 @@
 import { createApiClient } from "@transcriptioneer/api-client";
-import type { PresignUploadResponse, ProcessingJob, SourceFile, Transcript } from "@transcriptioneer/types";
+import type {
+  KnowledgeItem,
+  PresignUploadResponse,
+  ProcessingJob,
+  SourceFile,
+  Transcript,
+} from "@transcriptioneer/types";
 
 // Same reasoning as auth-service.ts: file endpoints require the session
 // cookie, so credentials: "include" is non-negotiable here.
@@ -69,5 +75,11 @@ export const filesService = {
 
   getTranscript(id: string): Promise<Transcript | null> {
     return filesApiClient.request<Transcript | null>(`/api/v1/files/${id}/transcript`);
+  },
+
+  /** Null until aiAnalysisService finishes (Milestone 6) — not an error,
+   * same "expected absence" reasoning as getJob/getTranscript. */
+  getKnowledgeItem(id: string): Promise<KnowledgeItem | null> {
+    return filesApiClient.request<KnowledgeItem | null>(`/api/v1/files/${id}/knowledge-item`);
   },
 };

@@ -71,6 +71,16 @@ model Organization {
 
   members OrganizationMember[]
   files   SourceFile[]
+
+  // Milestone 6: shared/reusable-across-the-org extracted entities
+  // (ARCHITECTURE.md §4 — "so 'everything about Project X' / 'what did
+  // Juan say' is a real query", not siloed per document).
+  topics        Topic[]
+  keywords      Keyword[]
+  tags          Tag[]
+  people        Person[]
+  organizations OrganizationEntity[]
+  locations     Location[]
 }
 
 /// Multi-tenant from day one (ARCHITECTURE.md §7) — every later entity
@@ -149,6 +159,7 @@ model SourceFile {
 
   processingJob ProcessingJob?
   transcript    Transcript?
+  knowledgeItem KnowledgeItem?
 
   @@index([organizationId])
 }
@@ -156,6 +167,9 @@ model SourceFile {
 enum ProcessingStage {
   QUEUED
   TRANSCRIBING
+  /// Milestone 6: the transcript exists and aiAnalysisService is turning it
+  /// into a KnowledgeItem (ARCHITECTURE.md §6's state machine).
+  ANALYZING
   COMPLETED
   FAILED
 }
@@ -191,4 +205,301 @@ model Transcript {
   createdAt    DateTime @default(now())
 
   sourceFile SourceFile @relation(fields: [sourceFileId], references: [id], onDelete: Cascade)
+}
+
+// ---------------------------------------------------------------------------
+// Milestone 6: AI analysis (ARCHITECTURE.md §4/§6). aiAnalysisService turns a
+// Transcript into a KnowledgeItem — structured, queryable rows rather than a
+// JSON blob, since ARCHITECTURE.md §4 explicitly calls for entities that need
+// to be queried across documents ("everything about Project X", "what did
+// Juan say"). Topic/Keyword/Tag and Person/OrganizationEntity/Location are
+// shared and deduplicated per Organization (see the Organization model
+// above); everything else (EventDate, Decision, Task, Question, OpenIssue,
+// Fact, Quote) is owned per KnowledgeItem, not shared.
+// ---------------------------------------------------------------------------
+
+/// The structured AI output for a SourceFile's Transcript — one per
+/// SourceFile (ARCHITECTURE.md §4).
+model KnowledgeItem {
+  id              String   @id @default(uuid())
+  sourceFileId    String   @unique
+  title           String
+  summary         String
+  detailedSummary String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  sourceFile SourceFile @relation(fields: [sourceFileId], references: [id], onDelete: Cascade)
+
+  topics        KnowledgeItemTopic[]
+  keywords      KnowledgeItemKeyword[]
+  tags          KnowledgeItemTag[]
+  people        PersonMention[]
+  organizations OrganizationMention[]
+  locations     LocationMention[]
+  eventDates    EventDate[]
+  decisions     Decision[]
+  tasks         Task[]
+  questions     Question[]
+  openIssues    OpenIssue[]
+  facts         Fact[]
+  quotes        Quote[]
+}
+
+/// Reusable across every KnowledgeItem in the org — "everything about
+/// Project X" is a real query against this table, not a text search.
+model Topic {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+
+  organization Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        KnowledgeItemTopic[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model Keyword {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+
+  organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        KnowledgeItemKeyword[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model Tag {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+
+  organization Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  items        KnowledgeItemTag[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model KnowledgeItemTopic {
+  id              String @id @default(uuid())
+  knowledgeItemId String
+  topicId         String
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+  topic         Topic         @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@unique([knowledgeItemId, topicId])
+  @@index([topicId])
+}
+
+model KnowledgeItemKeyword {
+  id              String @id @default(uuid())
+  knowledgeItemId String
+  keywordId       String
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+  keyword       Keyword       @relation(fields: [keywordId], references: [id], onDelete: Cascade)
+
+  @@unique([knowledgeItemId, keywordId])
+  @@index([keywordId])
+}
+
+model KnowledgeItemTag {
+  id              String @id @default(uuid())
+  knowledgeItemId String
+  tagId           String
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+  tag           Tag           @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([knowledgeItemId, tagId])
+  @@index([tagId])
+}
+
+/// Deduplicated per org (ARCHITECTURE.md §4: "'what did Juan say' resolves
+/// across documents") — a mention of the same person in two different
+/// SourceFiles links to the same Person row, not two separate ones.
+model Person {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+
+  organization Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  mentions     PersonMention[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+/// Named `OrganizationEntity` (not `Organization`) to avoid colliding with
+/// the tenant Organization model above — this is an *extracted mention*
+/// ("Acme Corp", "the Senate"), unrelated to multi-tenancy.
+model OrganizationEntity {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+
+  organization Organization          @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  mentions     OrganizationMention[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model Location {
+  id             String   @id @default(uuid())
+  organizationId String
+  name           String
+  createdAt      DateTime @default(now())
+
+  organization Organization      @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  mentions     LocationMention[]
+
+  @@unique([organizationId, name])
+  @@index([organizationId])
+}
+
+model PersonMention {
+  id              String  @id @default(uuid())
+  knowledgeItemId String
+  personId        String
+  /// Short excerpt of how/why they were mentioned, straight from the model
+  /// output — not re-derived from the transcript at read time.
+  context         String?
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+  person        Person        @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([knowledgeItemId, personId])
+  @@index([personId])
+}
+
+model OrganizationMention {
+  id              String  @id @default(uuid())
+  knowledgeItemId String
+  organizationId  String
+  context         String?
+
+  knowledgeItem KnowledgeItem      @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+  organization  OrganizationEntity @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([knowledgeItemId, organizationId])
+  @@index([organizationId])
+}
+
+model LocationMention {
+  id              String  @id @default(uuid())
+  knowledgeItemId String
+  locationId      String
+  context         String?
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+  location      Location      @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([knowledgeItemId, locationId])
+  @@index([locationId])
+}
+
+/// Owned per KnowledgeItem (not deduplicated/shared) — dates are specific to
+/// the document they were extracted from.
+model EventDate {
+  id              String    @id @default(uuid())
+  knowledgeItemId String
+  label           String
+  /// As extracted, verbatim (e.g. "next Thursday", "March 15, 44 BC") —
+  /// never discarded even when `date` below could be resolved, since
+  /// resolution can be wrong and the raw text is the audit trail.
+  rawText         String
+  /// Parsed calendar date when the model could confidently resolve one;
+  /// null otherwise (relative/ambiguous dates, ancient dates before
+  /// DateTime's usable range, etc.).
+  date            DateTime?
+  createdAt       DateTime  @default(now())
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeItemId])
+}
+
+model Decision {
+  id              String   @id @default(uuid())
+  knowledgeItemId String
+  text            String
+  createdAt       DateTime @default(now())
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeItemId])
+}
+
+enum TaskStatus {
+  OPEN
+  DONE
+}
+
+model Task {
+  id              String     @id @default(uuid())
+  knowledgeItemId String
+  text            String
+  status          TaskStatus @default(OPEN)
+  assignee        String?
+  createdAt       DateTime   @default(now())
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeItemId])
+}
+
+model Question {
+  id              String   @id @default(uuid())
+  knowledgeItemId String
+  text            String
+  createdAt       DateTime @default(now())
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeItemId])
+}
+
+model OpenIssue {
+  id              String   @id @default(uuid())
+  knowledgeItemId String
+  text            String
+  createdAt       DateTime @default(now())
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeItemId])
+}
+
+model Fact {
+  id              String   @id @default(uuid())
+  knowledgeItemId String
+  text            String
+  createdAt       DateTime @default(now())
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeItemId])
+}
+
+model Quote {
+  id              String   @id @default(uuid())
+  knowledgeItemId String
+  text            String
+  speaker         String?
+  createdAt       DateTime @default(now())
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+
+  @@index([knowledgeItemId])
 }
