@@ -27,6 +27,13 @@ MILESTONE 5 — AUDIO TRANSCRIPTION — CORE SCOPE COMPLETE, VERIFIED LIVE
   automatically on upload confirmation, and dashboard polling/toast all
   done — verified against the real local Whisper install on the VPS
   with real synthesized speech, correctly transcribed end-to-end.
+MILESTONE 6 — AI ANALYSIS — CORE SCOPE COMPLETE, VERIFIED LIVE
+  (started and verified end-to-end 2026-08-08): KnowledgeItem + 15 related
+  models, OpenAiAnalysisService (packages/ai, first real OPENAI_API_KEY
+  use), a BullMQ worker triggered on Transcript completion, and a real
+  on-screen dialog on the dashboard all done — verified against the real
+  OpenAI API and the real VPS Whisper install with synthesized speech,
+  correctly reorganized end-to-end.
 ```
 
 Milestone 2.5 is done: the founder resolved its one open question
@@ -395,6 +402,87 @@ against both, not just against technical completeness.
   worker into its own process (fine to defer until load actually demands
   it).
 
+### Milestone 6 — AI analysis (core scope complete, verified live 2026-08-08)
+
+- **Schema**: `KnowledgeItem` (one per SourceFile: title, summary,
+  detailedSummary) plus 15 related models mirroring `ARCHITECTURE.md` §4's
+  full shape — `Topic`/`Keyword`/`Tag` and `Person`/`OrganizationEntity`/
+  `Location` are deduplicated per Organization via `connectOrCreate` (so
+  "everything about Project X" or "what did Juan say" resolves across
+  documents, not per-file), each linked through its own join table
+  (`KnowledgeItemTopic`, `PersonMention`, etc., the latter carrying a
+  `context` string per mention). `EventDate`/`Decision`/`Task`/`Question`/
+  `OpenIssue`/`Fact`/`Quote` are owned per KnowledgeItem, not shared.
+  `ProcessingStage` gained `ANALYZING` between `TRANSCRIBING` and
+  `COMPLETED`, matching `ARCHITECTURE.md` §6's state machine. Migration
+  `20260808021536_add_knowledge_item`, generated offline the same way as
+  every prior migration and applied to the live database.
+- **First real OpenAI SDK use in this repo**: `OpenAiAnalysisService`
+  (`packages/ai`), implementing an `AnalysisProvider` interface (same
+  swappable-provider pattern as `TranscriptionProvider`). Uses the OpenAI
+  SDK's structured-output mode (`zodResponseFormat`) against a Zod schema
+  matching the KnowledgeItem shape; a refused/unparseable response gets one
+  bounded retry with the failure reason fed back to the model before
+  throwing for good. The system prompt is explicit that this is a
+  *reorganization* into Transcriptioneer's ideal categories, not a
+  same-order restatement of the transcript, and instructs the model to
+  answer in the transcript's own language and never invent content to fill
+  an empty category.
+- **API** (`apps/api/src/analysis/`): a second BullMQ queue + `WorkerHost`
+  processor, collocated in the same PM2 process, `concurrency: 2` (safe
+  here unlike transcription's `concurrency: 1` — this is I/O-bound on the
+  OpenAI API, not CPU-bound on the VPS's 1 vCPU).
+  `TranscriptionProcessor` now sets `ANALYZING` instead of `COMPLETED`
+  once a Transcript is saved and enqueues the analysis job — analysis
+  itself sets the terminal `COMPLETED`/`FAILED`. New endpoint
+  `GET /api/v1/files/:id/knowledge-item`, same "null instead of 404"
+  pattern as `/job`/`/transcript`. `OPENAI_API_KEY` is optional at boot,
+  same resilience pattern as every other external service in this repo —
+  the analysis job just fails with a clear `errorMessage` instead of
+  crashing.
+- **apps/web**: the dashboard's upload-polling loop now waits through
+  `ANALYZING` and, once `COMPLETED`, fetches the real `KnowledgeItem` and
+  opens a real dialog (`KnowledgeItemDialog`) showing the organized result
+  on screen — summary, topics/keywords/tags, people/organizations/
+  locations, dates, decisions/tasks/questions/open issues, facts, and
+  quotes. Deliberately not routed through `/library` (still mock-data-only
+  until Milestone 8+) — this needed to show real API data the moment
+  analysis finishes, not wait for the library rebuild.
+- **Full live verification** against `https://app.transcriptioneer.online`
+  and the real OpenAI API: synthesized ~2 minutes of Spanish narration
+  about the assassination of Julius Caesar (`espeak-ng` + `ffmpeg`, same
+  technique as Milestone 5's verification) and drove the actual pipeline
+  via `curl`: register → presign → upload → confirm (auto-enqueues
+  transcription) → job reached `ANALYZING` then `COMPLETED` in under a
+  minute → `GET /knowledge-item` returned a correctly reorganized result
+  (title, summary, detailed multi-paragraph summary, topics/keywords/tags,
+  the two people mentioned with context, the two locations, the event date
+  with a parsed `isoDate`, and six verbatim quotes) with no invented
+  decisions/tasks/questions/facts, since the source narration had none.
+  Also logged into the real web UI with the test account and confirmed the
+  dashboard renders cleanly with no console errors post-deploy. All test
+  data (file, KnowledgeItem and its related rows via cascade, organization,
+  user) deleted afterward — no leftover data in production.
+- **One known model-accuracy gap, not a code bug**: the event-date
+  extraction for "44 BC" resolved to `isoDate: "0044-03-15"` — year 44 AD,
+  not 44 BC, since `Date` has no BC representation and the system prompt's
+  instruction to leave ancient/out-of-range dates `null` wasn't followed
+  precisely by the model. `rawText` ("15 de marzo del año 44 antes de
+  Cristo") is preserved verbatim regardless, so no information is lost,
+  but the parsed `isoDate` for antiquity-era dates shouldn't be trusted
+  as-is — worth tightening the prompt or the schema (e.g. a `confidence`
+  or `era` field) in a follow-up pass, not blocking.
+- 13 new tests: `OpenAiAnalysisService` (success, retry-then-succeed,
+  fail-after-retry) and `AnalysisProcessor` (success/persist, unconfigured
+  provider, analysis failure + rethrow, vanished Transcript), plus the
+  existing `TranscriptionProcessor` suite updated for the new
+  `ANALYZING`/enqueue behavior. `pnpm typecheck/lint/test` clean across the
+  monorepo (except the same pre-existing, unrelated stale-copy test).
+- **Not yet done:** everything past "the KnowledgeItem exists in
+  Postgres and shows in a dialog" — a `/library`-type screen reading real
+  KnowledgeItems (Milestone 8+), retry logic for `FAILED` analysis jobs,
+  and the `isoDate`-for-antiquity accuracy gap noted above.
+
 ### Repo history note
 `main` (origin) and `master` (this branch) are unrelated git histories.
 `VISUAL_IDENTITY.md`, including the founder's 2026-07-29 mandatory-skeuomorphism
@@ -428,7 +516,8 @@ future unification decision.
   end-to-end 2026-08-07**; see above
 - ~~Audio transcription (Milestone 5)~~ — **core scope done and verified
   live end-to-end 2026-08-07**; see above
-- AI analysis / OpenAI integration (Milestone 5/6)
+- ~~AI analysis / OpenAI integration (Milestone 6)~~ — **core scope done
+  and verified live end-to-end 2026-08-08**; see above
 - Document processing (Milestone 7)
 - Knowledge library, semantic search, AI chat (Milestones 8–10)
 - ~~Real product screens beyond the homepage~~ — **done 2026-08-01, ahead of schedule:** founder decision to build the full product interface now (visually finished, data placeholder) rather than a "developer dashboard" MVP. `/library`, `/library/[id]` (Summary/Transcript/Ideas/Connections tabs), `/ask` (chat + citations), `/insights` (stats + weekly chart + surfaced insights), `/connections` (SVG graph), `/projects`, `/settings` all exist as real routes with production-quality components, wired through a `lib/services/` interface layer (`libraryService`, `askService`, `insightsService`, `connectionsService`, `projectsService`) so swapping mock implementations for real API calls later doesn't require touching any page. Seed data is believable domain content, not lorem ipsum. `pnpm typecheck/lint/test` clean; verified via `next build --webpack` + `next start` (see the webpack dev-mode HMR note below — build+start was used for the same pre-existing reason).
@@ -533,21 +622,18 @@ curl http://localhost:4000/health   # expect "status":"ok", not "degraded"
 ## Next milestone
 
 ```
-MILESTONE 6 — AI ANALYSIS
+MILESTONE 7 — DOCUMENT PROCESSING
 ```
 
-Milestone 5's core scope (`ProcessingJob`/`Transcript` schema,
-`LocalWhisperProvider`, BullMQ worker, dashboard polling) is done and
-verified live end-to-end against production, including a real
-speech-to-text run through the actual Whisper install on the VPS — see
-"Milestone 5 — Audio transcription" above. Per the product roadmap
-(`ARCHITECTURE.md` §6/§12): `aiAnalysisService` — a structured-output call
-(OpenAI, the first real use of an `OPENAI_API_KEY` in this repo) against a
-Zod-validated schema matching the `KnowledgeItem` shape (summary, topics,
-tasks, decisions, etc. — ARCHITECTURE.md §4), triggered once a
-`Transcript` exists, same enqueue-on-completion pattern Milestone 5 already
-established. Invalid model output gets one bounded retry with the
-validation error fed back before failing.
+Milestone 6's core scope (`KnowledgeItem` + related schema,
+`OpenAiAnalysisService`, BullMQ worker, dashboard dialog) is done and
+verified live end-to-end against production and the real OpenAI API — see
+"Milestone 6 — AI analysis" above. Per the product roadmap
+(`ARCHITECTURE.md` §4/§6): `documentExtractionService` — format-specific
+extractors (pdf-parse, mammoth for docx, plain read for txt/md) behind a
+common `Extractor` interface, feeding into the same `aiAnalysisService`
+pipeline non-audio `SourceFile`s currently skip entirely (`isTranscribable`
+in `files.service.ts` only enqueues audio/video today).
 
 ## Exact recommended first task when development resumes
 
@@ -570,7 +656,12 @@ validation error fed back before failing.
    (see above). Not blocking, worth doing eventually: retry logic for
    `FAILED` jobs, and splitting the worker into its own PM2 process once
    load justifies it.
-6. Start Milestone 6 (AI analysis) per `ARCHITECTURE.md` §4/§6: get a real
-   `OPENAI_API_KEY` (still unset — `.env.example` has it commented out),
-   `KnowledgeItem` + related Prisma models, and `aiAnalysisService` in
-   `packages/ai` triggered on `Transcript` completion.
+6. ~~Start Milestone 6 (AI analysis)~~ — **done 2026-08-08**, verified live
+   end-to-end against the real OpenAI API (see above). Not blocking, worth
+   doing eventually: the antiquity-era `isoDate` accuracy gap noted above,
+   and retry logic for `FAILED` analysis jobs.
+7. Start Milestone 7 (document processing) per `ARCHITECTURE.md` §4/§6:
+   `documentExtractionService` in `packages/ai` (pdf-parse, mammoth,
+   plain-text extractors behind a common `Extractor` interface), wired so
+   `FilesService.confirmUpload` enqueues non-audio `SourceFile`s too, then
+   into the same `aiAnalysisService` KnowledgeItem pipeline.
